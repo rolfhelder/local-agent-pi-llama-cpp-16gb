@@ -4,15 +4,25 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 import {root,machine,prepareProfile,acquireInferenceLock,ensureServer,exec} from './local-runtime.mjs';
+import {consoleUI} from './console-ui.mjs';
+import {activity} from './terminal-activity.mjs';
 
 // Separate desktop launcher: one loaded model, the same request-budget hooks,
 // and a pinned SDK without modifying Pi App's executable or packaged source.
 const args=process.argv.slice(2);
 const value=(key,fallback)=>{const at=args.indexOf(key);if(at<0)return fallback;const result=args[at+1];if(!result||result.startsWith('--'))throw Error(key+' needs a value');args.splice(at,2);return result;};
 const flag=key=>{const at=args.indexOf(key);if(at<0)return false;args.splice(at,1);return true;};
+const noColor=flag('--no-color'),ascii=flag('--ascii');
+const ui=consoleUI([...(noColor?['--no-color']:[]),...(ascii?['--ascii']:[])]);
+let busy;
+const start=text=>{busy?.stop();busy=activity({message:text,color:!noColor&&process.stderr.isTTY&&!process.env.NO_COLOR,ascii});};
+const done=text=>{busy?.stop();busy=undefined;ui.status(true,text);};
+ui.title('PI APP','One local model · llama.cpp · desktop workspace');
+try {
 const selected=value('--model','gemma'),requestedCwd=value('--cwd',undefined);
 const configureOnly=flag('--configure-only'),attach=flag('--attach'),debug=value('--debug-port',undefined);
 if(args.length)throw Error('Unknown arguments: '+args.join(' '));
+start('Checking desktop and installation');
 if(!configureOnly){
  const existing=await exec('powershell.exe',['-NoProfile','-NonInteractive','-Command',"Get-CimInstance Win32_Process -Filter \"Name='pi Desktop.exe'\" | Where-Object {$_.CommandLine -notmatch '--type='} | Select-Object -ExpandProperty ProcessId"],{windowsHide:true});
  if(existing.stdout.trim())throw Error('Pi App is already running. Use its existing window, or Quit it from the tray before launching a different model.');
@@ -21,11 +31,17 @@ const manifest=JSON.parse(await readFile(path.join(root,'manifests/pi-app.json')
 const executable=path.join(root,'runtime/pi-app',manifest.asset);
 const hash=createHash('sha256').update(await readFile(executable)).digest('hex');
 if(hash!==manifest.sha256)throw Error('Pi App checksum mismatch');
+done('Pi App installation verified');
+start('Preparing local model, effort settings and desktop SDK');
 const userData=path.join(process.env.APPDATA,'pi-desktop');
 const previousAppSettings=JSON.parse(await readFile(path.join(userData,'pi-desktop.json'),'utf8').catch(e=>{if(e.code==='ENOENT')return '{}';throw e;}));
-const cwd=path.resolve(requestedCwd??previousAppSettings.currentProject??path.dirname(root));
-const config=await machine(selected),prepared=await prepareProfile('pi-app',config,cwd);
-const settings={...prepared.settings,defaultProvider:'local-llama',defaultModel:config.ModelId,defaultThinkingLevel:'medium',enabledModels:['local-llama/'+config.ModelId]};
+const config=await machine(selected);
+const cwd=path.resolve(requestedCwd??config.WorkingDirectory??previousAppSettings.currentProject??path.dirname(root));
+const prepared=await prepareProfile('pi-app',config,cwd);
+const preferences=JSON.parse(await readFile(prepared.env.PI_EFFORT_PREFERENCES,'utf8').catch(error=>{if(error.code==='ENOENT')return '{}';throw error;}));
+const thinking=config.Reasoning===false?'off':preferences[selected]??config.ThinkingLevel??'medium';
+if(!['off','low','medium','high'].includes(thinking))throw Error('ThinkingLevel must be off, low, medium or high');
+const settings={...prepared.settings,defaultProvider:'local-llama',defaultModel:config.ModelId,defaultThinkingLevel:thinking,enabledModels:['local-llama/'+config.ModelId]};
 await writeFile(path.join(prepared.agentDir,'settings.json'),JSON.stringify(settings,null,2)+'\n');
 await mkdir(userData,{recursive:true});
 const backupDir=path.join(root,'.state/pi-app-backups',new Date().toISOString().replace(/[:.]/g,'-'));
@@ -49,9 +65,18 @@ const env={...prepared.env,PI_LOCAL_DESKTOP_UI:'1'};
 // Only the actually loaded alias is exposed. Restart this launcher to switch.
 delete env.PI_LOCAL_RESTART_REQUEST;
 await writeFile(path.join(root,'.state/pi-app-launch.json'),JSON.stringify({model:config.ModelId,agentDir:prepared.agentDir,cwd,endpoint:config.RouterUrl,sdkVersion:JSON.parse(await readFile(path.join(target,'@earendil-works/pi-coding-agent/package.json'),'utf8')).version},null,2)+'\n');
-if(configureOnly){console.log('Pi App profile and SDK configured. Launch with bin\\pia-app.cmd after quitting an older Pi App instance.');process.exit(0);}
+done('Model, effort settings and desktop SDK configured');
+ui.row('Model',config.ModelId);
+ui.row('Context',config.ContextSize.toLocaleString('en-US')+' tokens');
+ui.row('Reasoning',config.Reasoning===false?'off':thinking+' (request budget presets)');
+ui.row('Response cap',config.MaxTokens.toLocaleString('en-US')+' tokens');
+ui.row('Pi settings',prepared.agentDir);
+ui.row('Workspace',cwd);
+ui.row('Endpoint',config.RouterUrl);
+if(configureOnly){ui.finish('Configuration saved. Run local-ai-app to open the desktop.');} else {
 let release,server;
 try{
+ start(attach?'Checking the existing llama.cpp server':'Loading model into GPU memory; waiting for llama.cpp health');
  if(attach){
   // Explicit opt-in for an existing pia-owned server. Never stop that server.
   const props=await (await fetch(config.RouterUrl+'/props')).json();
@@ -59,9 +84,13 @@ try{
   if(!models.data?.some(m=>m.id===config.ModelId)||props.default_generation_settings?.n_ctx!==config.ContextSize||props.total_slots!==1||path.resolve(props.model_path||'')!==path.resolve(config.ModelFile))throw Error('Existing llama.cpp configuration does not match the selected desktop model');
   console.log('Using the existing server; keep its owning pia session open and submit only one turn at a time.');
  }else{release=await acquireInferenceLock();server=await ensureServer(config);}
+ done('Local model server is ready');
+ start('Opening Pi App');
  const logPath=path.join(root,'.state/pi-app-launcher.log');
  const {openSync,closeSync}=await import('node:fs');const log=openSync(logPath,'a');
  const child=spawn(executable,debug?['--remote-debugging-address=127.0.0.1','--remote-debugging-port='+debug]:[],{cwd,env,windowsHide:true,stdio:['ignore',log,log]});closeSync(log);
+ child.once('spawn',()=>{done('Pi App started; its window is opening');ui.finish('Keep this terminal open while using Pi App. Quit Pi App to release the model.');});
  await new Promise((resolve,reject)=>{child.once('error',reject);child.once('exit',code=>code?reject(Error('Pi App exited '+code+'; see '+logPath)):resolve());});
-}catch(e){console.error(e.message);process.exitCode=1;}
-finally{await server?.stop();await release?.();}
+}finally{busy?.stop();busy=undefined;if(server)start('Closing the owned model server');try{await server?.stop();await release?.();}finally{busy?.stop();busy=undefined;}if(server)ui.status(true,'Model stopped; GPU memory released');}
+}
+}catch(e){busy?.stop();ui.status(false,e.message);ui.line('  Details: '+path.join(root,'.state/pi-app-launcher.log'));process.exitCode=1;}

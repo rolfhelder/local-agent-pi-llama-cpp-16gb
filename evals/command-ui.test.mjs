@@ -4,7 +4,15 @@ import {spawnSync} from 'node:child_process';
 import path from 'node:path';
 import {root} from '../scripts/local-runtime.mjs';
 import {consoleUI} from '../scripts/console-ui.mjs';
+import {activity} from '../scripts/terminal-activity.mjs';
 const launch=args=>spawnSync(process.execPath,[path.join(root,'scripts/pia.mjs'),...args],{encoding:'utf8',timeout:15000,cwd:root});
+
+test('desktop startup reports its initial operation and readable errors before model loading',()=>{
+ let text='';const busy=activity({message:'Loading model into GPU memory',stream:{write:s=>text+=s,isTTY:false},ascii:true});busy.stop();
+ assert.match(text,/Loading model into GPU memory/);assert.doesNotMatch(text,/Inspecting local runtime/);
+ const result=spawnSync(process.execPath,[path.join(root,'scripts/pi-app.mjs'),'--unknown','--ascii','--no-color'],{encoding:'utf8',timeout:15000});
+ assert.equal(result.status,1);assert.match(result.stdout,/LOCAL AI \/ PI APP/);assert.match(result.stdout,/\[X\] Unknown arguments/);assert.doesNotMatch(result.stderr,/at ModuleJob/);
+});
 test('human renderer neutralizes terminal control injection and separates labels',()=>{
  let text='';const ui=consoleUI([],{write:s=>text+=s,isTTY:false});ui.row('Existing keys preserved',11);ui.status(false,'bad\x1b[2Jvalue');
  assert.match(text,/preserved\s+11/);assert.doesNotMatch(text,/\x1b/);

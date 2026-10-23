@@ -27,13 +27,20 @@ local-ai-app --model qwen
 local-ai-app --model gpt-oss
 ```
 
-The Start shortcut runs `scripts/Start-PiApp.ps1`; `scripts/pi-app.mjs` prepares `.state/profiles/pi-app`, starts one llama.cpp model on loopback port 48763, launches the portable GUI, and stops its owned server after the app quits. Gemma is the default. The selected model's native limit caps the context; the usual 204800 default applies except GPT-OSS (131072). `--cwd PATH` selects a project; otherwise the last project is retained, initially the Code directory.
+The Start shortcut runs `scripts/Start-PiApp.ps1`; `scripts/pi-app.mjs` prepares the desktop profile, starts one llama.cpp model on loopback port 48763, launches the portable GUI, and stops its owned server after the app quits. Gemma is the default. The selected model's native limit caps the context; the usual 204800 default applies except GPT-OSS (131072). `--cwd PATH` selects a project for this launch; otherwise `WorkingDirectory` is used, falling back to the last project when no working folder is configured.
+
+The terminal shows installation checks, profile setup, model loading and desktop startup, with a continuously animated loading bar while work is pending. Check marks confirm completed stages; failures show a readable message. Keep the terminal open while using the app. `--no-color` and `--ascii` provide plain output for simpler terminals. The Start Menu shortcut records these messages in `.state/pi-app-start-menu.log` because it launches without a visible terminal.
+
+Choose the working folder using **6 — Choose working folder** in `local-ai install`. With `WorkingDirectory` set, Pi App uses `<working-folder>/.pi/local-ai/profiles/pi-app` for its settings, provider configuration and sessions. Saved `/effort ... --save` preferences live in `<working-folder>/.pi/local-ai/effort-preferences.json`. The CLI uses its separate `standard` profile in the same folder. Older `.state/profiles` locations remain a fallback when no folder is selected.
+
+The desktop Extensions panel now discovers generated entry files under that profile's `extensions` directory. Each entry loads the implementation from this checkout, and is explicitly registered once with the worker. This makes the panel show loaded capabilities instead of an empty inventory. Re-run the launcher after moving this checkout to regenerate the entry paths.
 
 Quit the current Pi App from its tray before changing models. Closing the window may leave it running in the tray. The desktop model list exposes only the loaded alias: selecting a name in a GUI cannot itself load a different GGUF. The shared inference lock prevents launching another owned CLI/eval server at the same time. `--attach` is an explicit advanced option for a matching existing server; it does not take ownership, and its original owner must remain open.
 
 ## Thinking, tools and context
 
 - Built-in effort picker changes session thinking state. The native effort extension maps it to real request budgets: off 0, low 512, medium 2048, high 4096, with 8192 total output tokens by default. Model capability distinctions and explicit saved defaults are documented in [effort controls](EXTENSIONS.md#context-usage-and-effort).
+- Reasoning is advertised in the model/provider configuration and enabled in llama.cpp. Startup displays the chosen effort. `/effort high --save` saves a per-model default in the working folder; `/effort medium` changes only the active session. A saved preference takes precedence over optional `ThinkingLevel` in machine.local.json; the fallback is medium. Gemma uses local token-budget presets, not distinct native effort modes.
 - Default desktop worker setting is one, with five-minute idle reclamation. llama.cpp has one inference slot. No subagent or plan modules are installed into this profile.
 - Windows PowerShell tools, destructive-command approval adapters and Windows-adapted TypeScript LSP carry over. Desktop extension confirmations use the app's native UI bridge; unattended RPC remains blocked for destructive commands.
 - Files, Run, Context and the experimental built-in Browser panel are enabled. Browser agent control remains opt-in per session; Playwright CLI remains the chosen coding/browser automation interface. A browser panel does not itself add browser tools to every prompt.

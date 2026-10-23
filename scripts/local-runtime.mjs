@@ -3,8 +3,9 @@ import { promisify } from 'node:util';
 import { readFile, writeFile, mkdir, open, unlink, access,readdir } from 'node:fs/promises';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath,pathToFileURL } from 'node:url';
 import {randomUUID} from 'node:crypto';
+import {profileLocation} from './working-folder.mjs';
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const exec = promisify(execFile);
 export const nodeExe = path.join(root, 'runtime/node/node.exe');
@@ -128,7 +129,7 @@ export async function prepareProfile(name, config, cwd = root, {agentDirectory} 
     web: ['bash-policy', 'windows-policy', 'lsp-windows', '@arcanemachine/pi-web-search'],
   };
   if (!profiles[name]) throw new Error(`Unknown profile ${name}. Choose ${Object.keys(profiles).join(', ')}`);
-  const agentDir = agentDirectory ? path.resolve(agentDirectory) : path.join(root, '.state/profiles', name);
+  const agentDir = profileLocation(config,name,{isolatedDirectory:agentDirectory});
   if(agentDirectory){const relative=path.relative(path.join(root,'.state'),agentDir);if(relative.startsWith('..')||path.isAbsolute(relative))throw new Error('Isolated agent directory must stay within local .state');}
   await mkdir(agentDir, { recursive: true });
   const packages = profiles[name].filter(value => !['windows-policy','bash-policy','lsp-windows'].includes(value)).map(value => path.join(root, 'node_modules', value));
@@ -151,7 +152,21 @@ export async function prepareProfile(name, config, cwd = root, {agentDirectory} 
     settings.skills = [path.join(root, '.state/.agents/skills')];
     settings.prompts = (await readdir(path.join(root,'prompts')).catch(error => { if (error.code === 'ENOENT') return []; throw error; })).filter(name=>name.endsWith('.md')&&name!=='effort.md').map(name=>path.join(root,'prompts',name));
   }
-  if(name==='pi-app')settings.extensions.push(path.join(root,'extensions/pi-app-compat.mjs'));
+  if(name==='pi-app'){
+    settings.extensions.push(path.join(root,'extensions/pi-app-compat.mjs'));
+    // Pi App's inventory scans agentDir/extensions, not explicit settings paths.
+    // Use the same real entry files for discovery and execution; never copy source.
+    const visible=path.join(agentDir,'extensions');await mkdir(visible,{recursive:true});
+    const entries=[];
+    for(const source of settings.extensions){
+      const entry=path.join(visible,path.basename(source).replace(/\.(ts|js|mjs)$/,'.mjs'));
+      await writeFile(entry,'export {default} from '+JSON.stringify(pathToFileURL(source).href)+';\n');
+      entries.push(entry);
+    }
+    const previous=JSON.parse(await readFile(path.join(agentDir,'settings.json'),'utf8').catch(error=>{if(error.code==='ENOENT')return '{}';throw error;}));
+    const toggles=(previous.extensions??[]).filter(value=>typeof value==='string'&&/^[+-]/.test(value)&&entries.includes(path.resolve(agentDir,value.slice(1))));
+    settings.extensions=[...entries.filter(entry=>!toggles.some(value=>path.resolve(agentDir,value.slice(1))===entry)),...toggles];
+  }
   await writeFile(path.join(agentDir, 'settings.json'), JSON.stringify(settings, null, 2));
   await writeFile(path.join(agentDir, 'models.json'), JSON.stringify({ providers: { 'local-llama': {
     baseUrl: config.RouterUrl + '/v1', api: 'openai-completions', apiKey: 'local-only', models: [{
@@ -161,7 +176,9 @@ export async function prepareProfile(name, config, cwd = root, {agentDirectory} 
   } } }, null, 2));
   if (profiles[name].some(value => ['pi-lsp-extension','lsp-windows'].includes(value))) await prepareLsp(cwd);
   const guardRules = await readFile(path.join(root, 'config/guard.rules.json'), 'utf8');
-  return { agentDir, settings, env: environment({ PI_CODING_AGENT_DIR: agentDir, PI_GUARD: guardRules, PI_RESEARCH_MODEL: 'local-llama/' + config.ModelId,
+  const preferenceDirectory=config.WorkingDirectory?path.join(path.resolve(config.WorkingDirectory),'.pi/local-ai'):path.join(root,'.state');
+  await mkdir(preferenceDirectory,{recursive:true});
+  return { agentDir, settings, env: environment({ PI_CODING_AGENT_DIR: agentDir, PI_EFFORT_PREFERENCES:path.join(preferenceDirectory,'effort-preferences.json'),PI_GUARD: guardRules, PI_RESEARCH_MODEL: 'local-llama/' + config.ModelId,
     PI_LOCAL_TOKENIZER_URL:config.RouterUrl,PI_LOCAL_CONTEXT:String(config.ContextSize),PI_LOCAL_OUTPUT_CAP:String(generationLimits(config).maxTokens),PI_LOCAL_THINKING_BUDGET:String(generationLimits(config).reasoningBudget),PI_LOCAL_BUDGET_LOG:config.LogPath?config.LogPath+'.budget.jsonl':'' }) };
 }
 export async function prepareWindowsLsp() {

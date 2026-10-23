@@ -1,6 +1,6 @@
-export function activity({stream=process.stderr,color=stream.isTTY&&!process.env.NO_COLOR,ascii=false}={}){
+export function activity({stream=process.stderr,color=stream.isTTY&&!process.env.NO_COLOR,ascii=false,message:initialMessage='Inspecting local runtime and hardware'}={}){
  const paint=s=>color?`\x1b[38;5;80m${s}\x1b[0m`:s;
- let message='Inspecting local runtime and hardware',fraction=null,frame=0,last='',closed=false;
+ let message=initialMessage,fraction=null,frame=0,last='',closed=false;
  const started=Date.now();
  function draw(){
   if(closed)return;

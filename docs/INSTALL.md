@@ -40,6 +40,16 @@ Qwen3.8 27B recipes remain available in the model-results guide, but the tested 
 
 Run `local-ai install` and choose installation, inventory, real acceptance, or model checksum/health. Nothing installs or loads merely by opening the menu. Choose `0` to exit. Acceptance and doctor list installed GGUF models, automatically selecting only when exactly one is found. With several models, choose a number or enter a full GGUF path. `--model omnicoder` skips selection. Projector files and split shards are excluded from automatic discovery; a split model can be selected explicitly by its first shard path. Direct alternatives remain available: `local-ai install --plan`, `--check`, `--run`, `--test` (acceptance preview), and `--test --run` (real acceptance). `local-ai test --run` remains a shortcut.
 
+## Choose Pi's working folder
+
+The core-install menu asks for a working folder after installation. You can change it later with **6 — Choose working folder** in `local-ai install`. Enter an existing absolute path, type **B** to browse, or leave it blank to keep the current choice. The selection is independent of the model folder and is saved as `WorkingDirectory` in `machine.local.json`:
+
+```json
+{ "WorkingDirectory": "D:/Projects/Code-local" }
+```
+
+For unattended installation use `local-ai install --run --workspace "D:/Projects/Code-local"`. Both launchers use this folder by default; `--cwd PATH` overrides the opened project for one launch. Generated profiles, models/provider settings, session files and saved effort preferences live under the selected folder's **`.pi/local-ai/`**, which the wizard protects with a local `.gitignore`. These are private machine data; also exclude `.pi-lsp.json` if using Git in the working folder. Extension implementations and installed dependencies stay in this setup checkout. Existing sessions are not automatically moved when choosing a different folder; back up and copy the desired profile before switching. If no working folder is selected, legacy profiles remain under this checkout's `.state/profiles`.
+
 ## Choose where models live
 
 In `local-ai install`, choose **5 — Add model location**. In the file picker, select a GGUF and click **Open**, or navigate into a model folder, leave **Use this folder** in the file-name box and click **Open**. The folder is remembered in `machine.local.json` and searched on later runs. Choosing a file also selects it for this menu session. Cancelling the dialog changes nothing. Weights stay where they are; adding a location does not copy, download or load a model. A backup of the previous configuration is saved under ignored `.state/config-backups/` when a new folder is added.

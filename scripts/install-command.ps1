@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'Stop'
 if ($args.Count -lt 1 -or $args[0] -ne 'install') { throw 'Expected local-ai install' }
 $mapping = @{ '--plan'='Plan'; '--check'='Check'; '--json'='Json'; '--no-color'='NoColor'; '--ascii'='Ascii' }
-$options = @{}; $execute=$false; $test=$false; $model=$null
+$options = @{}; $execute=$false; $test=$false; $model=$null; $workspace=$null
 for ($i=1; $i -lt $args.Count; $i++) {
     $argument=$args[$i]
     if ($argument -eq '--run') { $execute=$true }
@@ -11,6 +11,10 @@ for ($i=1; $i -lt $args.Count; $i++) {
         $i++; if ($i -ge $args.Count -or [string]::IsNullOrWhiteSpace($args[$i])) { throw '--model requires a registered name or GGUF path' }
         $model=$args[$i]
     }
+    elseif ($argument -eq '--workspace') {
+        $i++; if ($i -ge $args.Count -or [string]::IsNullOrWhiteSpace($args[$i])) { throw '--workspace requires a working folder' }
+        $workspace=$args[$i]
+    }
     elseif ($mapping.ContainsKey($argument)) { $options[$mapping[$argument]]=$true }
     else { throw ('Unknown installation option: ' + $argument) }
 }
@@ -18,6 +22,27 @@ $actions=@($options.ContainsKey('Plan'),$options.ContainsKey('Check'),$test | Wh
 if ($actions.Count -gt 1 -or ($execute -and ($options.ContainsKey('Plan') -or $options.ContainsKey('Check')))) { throw 'Choose one action: --plan, --check, --run, --test or --test --run' }
 if ($options.ContainsKey('Json') -and $actions.Count -eq 0) { throw '--json requires --plan, --check or --test' }
 $project=Split-Path -Parent $PSScriptRoot
+function Select-WorkingFolder {
+    $node=Join-Path $project 'runtime/node/node.exe'
+    if (-not (Test-Path -LiteralPath $node) -or -not (Test-Path -LiteralPath (Join-Path $project 'machine.local.json'))) { throw 'Install core components first (option 1).' }
+    $selected=$workspace
+    if (-not $selected) {
+        Write-Host '  Choose where Pi works. Settings and sessions live in .pi/local-ai inside it.'
+        $selected=Read-Host '  Full folder path, B to browse, or blank to keep current settings'
+        if ([string]::IsNullOrWhiteSpace($selected)) { Write-Host '  Working folder unchanged.'; return }
+        if ($selected -eq 'B') {
+            Write-Host '  Opening folder picker; open your folder and confirm Use this folder. Cancel exits.'
+            $raw=& $node (Join-Path $PSScriptRoot 'browse-model.mjs') workspace
+            if ($LASTEXITCODE) { throw 'Folder picker ended; configuration unchanged.' }
+            $result=($raw -join "`n") | ConvertFrom-Json
+            if ($result.cancelled) { Write-Host '  Selection cancelled; working folder unchanged.'; return }
+            $selected=$result.path
+        }
+    }
+    & $node (Join-Path $PSScriptRoot 'working-folder.mjs') $selected.Trim('"')
+    if ($LASTEXITCODE) { throw 'Working folder was not saved.' }
+    Write-Host '  Models stay in their model folder. Restart Pi to use the selected working folder.'
+}
 function Browse-ModelLocation {
     $node=Join-Path $project 'runtime/node/node.exe'
     if (-not (Test-Path -LiteralPath $node)) { throw 'Install core components first (option 1).' }
@@ -65,7 +90,8 @@ function Invoke-Acceptance([bool]$Run) {
     if ($LASTEXITCODE) { throw 'Acceptance failed; see the report above.' }
 }
 if ($test) { Invoke-Acceptance $execute; return }
-if ($actions.Count -or $execute) { & (Join-Path $PSScriptRoot 'Install-Core.ps1') @options; return }
+if ($workspace -and (-not $execute -or $test)) { throw '--workspace is used with install --run, or choose working folder in the menu.' }
+if ($actions.Count -or $execute) { & (Join-Path $PSScriptRoot 'Install-Core.ps1') @options; if ($workspace) { Select-WorkingFolder }; return }
 $color=-not ($options.ContainsKey('NoColor') -or $env:NO_COLOR -or [Console]::IsOutputRedirected) -and $Host.UI.SupportsVirtualTerminal
 function Accent([string]$Text) { if ($color) { return "$([char]27)[38;5;80m$Text$([char]27)[0m" }; return $Text }
 while ($true) {
@@ -78,14 +104,15 @@ while ($true) {
     Write-Output '  3  Run acceptance test        Select installed model; answer + repair'
     Write-Output '  4  Verify model + health      Doctor with full model checksum'
     Write-Output '  5  Add model location        Choose a folder or GGUF; remember folder'
+    Write-Output '  6  Choose working folder     Pi settings and sessions live here'
     Write-Output '  0  Exit'
     Write-Output ''
-    $choice=Read-Host '  Choose [0-5]'
+    $choice=Read-Host '  Choose [0-6]'
     if ([string]::IsNullOrWhiteSpace($choice) -or $choice -eq '0') { return }
     try {
         $view=@{}; foreach ($key in @('NoColor','Ascii')) { if ($options.ContainsKey($key)) { $view[$key]=$true } }
         switch ($choice) {
-            '1' { & (Join-Path $PSScriptRoot 'Install-Core.ps1') @view }
+            '1' { & (Join-Path $PSScriptRoot 'Install-Core.ps1') @view; Select-WorkingFolder }
             '2' { & (Join-Path $PSScriptRoot 'Install-Core.ps1') -Check @view }
             '3' { Invoke-Acceptance $true }
             '4' {
@@ -95,7 +122,8 @@ while ($true) {
                 & $node (Join-Path $PSScriptRoot 'doctor.mjs') --model $selected --verify-model
             }
             '5' { Browse-ModelLocation }
-            default { Write-Output '  Choose a number from 0 to 5.' }
+            '6' { Select-WorkingFolder }
+            default { Write-Output '  Choose a number from 0 to 6.' }
         }
     } catch { Write-Output ('  Action failed: ' + $_.Exception.Message) }
 }

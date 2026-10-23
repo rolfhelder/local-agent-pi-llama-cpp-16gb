@@ -34,13 +34,15 @@ const localModel = requestedModel ?? legacyModel;
 const noReasoning = flag('--no-reasoning');
 const reasoningBudget = value('--reasoning-budget', undefined);
 const kv = value('--kv', 'f16');
-const cwd = path.resolve(value('--cwd', process.cwd()));
+const requestedCwd=value('--cwd',undefined);
+let cwd=path.resolve(requestedCwd??process.cwd());
 let release, server;
 try {
   if(requestedModel&&legacyModel&&requestedModel!==legacyModel)throw new Error('Conflicting --model and --local-model selections');
   let selectedModel=localModel,resume=false;
   for(;;){
   const config = await machine(selectedModel);
+  cwd=path.resolve(requestedCwd??config.WorkingDirectory??process.cwd());
   if(!['f16','q8_0'].includes(kv))throw new Error('--kv must be f16 or q8_0');
   if(kv==='q8_0')config.ExtraServerArgs=[...(config.ExtraServerArgs||[]),'--cache-type-k','q8_0','--cache-type-v','q8_0','--flash-attn','on'];
   if (noReasoning) config.Reasoning = false;

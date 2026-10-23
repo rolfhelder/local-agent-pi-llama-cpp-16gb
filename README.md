@@ -51,6 +51,8 @@ cd local-agent-pi-llama-cpp-16gb
 
 Model weights are a separate choice and can stay in any folder. Use the setup menu to browse for a model folder or GGUF file; it remembers the location in local configuration. Optional desktop/browser/helper assets are separate too. The installer has preview/current-machine checks; **clean-Windows installation acceptance remains pending**.
 
+The wizard also lets you choose Pi's **working folder**. Pi settings, sessions and saved effort preferences stay under that folder's `.pi/local-ai/`; model weights remain in their separate location.
+
 Follow the [installation checklist and model-selection guide](docs/INSTALL.md) for download recipes, machine configuration, first-run checks and recovery boundaries.
 
 ## See the measured tradeoffs

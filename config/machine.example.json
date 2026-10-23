@@ -2,6 +2,7 @@
   "PiExecutable": "C:\\AI\\pi\\pi.exe",
   "LlamaExecutable": "C:\\AI\\llama.cpp\\llama-server.exe",
   "ModelsDirectory": "C:\\AI\\models",
+  "WorkingDirectory": null,
   "RouterUrl": "http://127.0.0.1:48763",
   "Port": 48763,
   "ContextSize": 204800,
