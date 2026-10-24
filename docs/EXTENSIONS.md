@@ -54,6 +54,28 @@ Rules live in config/guard.rules.json and extensions/windows-destructive-policy.
 
 [@injaneity/pi-computer-use](https://github.com/injaneity/pi-computer-use) 0.5.1 was installed with its Windows helper; registration/protocol smoke checks passed. Real native desktop tasks and image grounding are not task-validated. Installed tools do not make a text-only model reliably interpret screenshots.
 
+## Session timing telemetry
+
+The local `session-telemetry` extension adds `message.telemetry` to each finalized assistant JSONL entry using Pi's supported `message_end` replacement hook, before the normal writer persists it. It also appends `customType: "session-telemetry.turn"` records with assistant/tool entry IDs and individual tool timings, plus a final `session-telemetry.run` summary. `/telemetry` displays the latest run summary without calling a model. The extension is enabled in non-native profiles and appears in Pi App's Extensions panel.
+
+| Field | Meaning |
+|---|---|
+| `total_latency_ms` | Monotonic elapsed time since the prompt input hook (fallback: run-start hook). On an assistant entry it ends at response completion; on a turn record it ends after that turn's tools; on a final run summary it ends at the last response or terminal tool completion. |
+| `turn_latency_ms` | Elapsed time since this Pi model/tool-loop turn began. One user prompt can contain several Pi turns. |
+| `tool_execution_ms` | Cumulative sum of Pi's measured execution durations for all tool calls since the prompt, including nested calls. Parallel and nested durations can overlap and exceed elapsed wall time. |
+| `top_level_tool_execution_ms` | Same sum excluding nested calls, avoiding parent/child double counting. |
+| `tool_wall_ms` | Union of observed tool event intervals, counting overlapping calls once. Includes event/approval overhead; it is not identical to execution-only time. |
+| `thought_time_ms` | Wall time between observed thinking-stream events. `null` if the provider emits none. Missing end events are marked incomplete. |
+| `internal_reasoning_compute_ms` | Always `null`: client hooks cannot measure hidden GPU reasoning compute, prefill, or distinguish network delivery time from generation. |
+
+Timings are cumulative within one prompt/run. A response preceding tool calls cannot include their future durations; its subsequent turn record and final summary do. The JSON identifies `scope`, run ID, turn number, clock, precision and status. Partial/aborted runs retain their status and open-call count; unavailable durations are not invented. Telemetry stores no prompt, reasoning text, tool arguments or tool output. Custom timing entries and the extra message property do not enter provider messages, as verified with a scripted provider. Only calls dispatched through Pi's tool lifecycle are visible: a trusted extension's independent child processes or network calls have no individual tool measurement unless routed through that lifecycle.
+
+The extension obtains the current file from `ctx.sessionManager.getSessionFile()`, not a guessed environment path. `PI_SESSION_FILE` is normally injected into shell tools when each starts; it need not exist in the SDK worker's environment. A stale environment path is recorded as a mismatch and ignored. Ephemeral sessions stay in memory. All appends use Pi's session writer, preserving entry IDs, parent links and resume behavior. Pi 1.3.0 serializes its writes synchronously within the owning process; neither Pi nor this extension supplies a cross-process filesystem lock. Do not open the same session for writing in multiple processes or remote machines. The one-worker/one-inference setup is the supported path.
+
+Durations use Node's monotonic `performance.now()`, not subtraction of calendar timestamps. Numeric values are rounded to 0.001 ms, retaining available precision rather than promising microsecond accuracy. Pi's tool duration may already be rounded to integer milliseconds. Calendar timestamps are anchored at input wall time plus monotonic elapsed time, so clock corrections, timezone changes and OS timer granularity do not create negative durations. Queued-input delay before hook delivery and process-crash completion cannot be reconstructed. These extensions are pinned to SDK 1.3.0; repeat the persistence test after SDK upgrades.
+
+Run `pnpm eval:telemetry` for the real-Pi scripted-provider persistence/abort/resume test. It uses no GPU or cloud account; artifacts remain under ignored `.state/evals/`. Deterministic clock, overlap, missing-reasoning and path tests also run with `pnpm test`.
+
 ## Native hooks and isolated checkouts
 
 Pi 1.3.0 already exposes input/context, before_agent_start, tool_call/tool_result, tool execution, turn/agent lifecycle, session/compaction and provider request/response events. before_provider_request supplies our effort budget hook; tool_call supplies approvals. Seven real-Pi scripted-provider hook checks passed. Read the [upstream extension contract](https://pi.dev/docs/latest/extensions) for event-specific return and cancellation semantics. These are JavaScript/TypeScript handlers, not an interchangeable Claude shell-hook settings file.
@@ -75,3 +97,7 @@ Uncommitted edits are not copied. Dependencies belong to each checkout; the inst
 [Context7](https://github.com/upstash/context7) was a library-documentation candidate; it was not task-validated in this stack. [pi-localllm-provider](https://github.com/freeyoung/pi-localllm-provider) offers local endpoint probes and fallbacks, but Windows/Pi 1.3 compatibility has not been tested here. [llama-cpp-windows-manager](https://github.com/alekk89/llama-cpp-windows-manager) is a broader runtime/profile manager; using it would be a separate migration trial, not another default service.
 
 The full repository survey stays in local ignored research notes. Personal teaching/transcription workflows are deliberately outside this public configuration guide.
+
+## Shell search deadlines
+
+The separately maintained `search-timeout.mjs` extension caps shell calls containing common file search/read commands at 30 seconds. `/search-timeout 120` raises the current-session cap; `/search-timeout reset` restores it. Model-requested larger timeouts remain capped. Builds and installs keep their existing limits, and destructive approvals remain independent. The timeout uses Pi's native cancellation and owned process-tree cleanup. Native grep/find/ls tools are not wrapped. Search detection is heuristic, not a security boundary. The extension was validated with unit tests and real PowerShell descendant cancellation, then configured after the localization trials; it did not affect their scores.

@@ -4,6 +4,8 @@ These tests answer different questions. A load/VRAM check is not a coding score;
 
 ## 1. Tool and harness conformance (no local-model inference)
 
+Session telemetry has deterministic clock/parallel-tool/path tests in `pnpm test` and a real-Pi scripted HTTP-provider test in `pnpm eval:telemetry`. The latter verifies assistant JSONL metadata, turn/run records, tool sums against Pi's native durations, emitted thinking phases, stale environment paths, shell `PI_SESSION_FILE`, abort handling, append-only resume and exclusion from model requests. It uses no GPU. It does not establish cross-process file locking or true hidden-reasoning compute timing; see [telemetry semantics](EXTENSIONS.md#session-timing-telemetry).
+
 On Windows, activate tools with `. ./scripts/Activate-Tools.ps1`, then run:
 
 ```powershell
@@ -234,3 +236,25 @@ The development check used Gemma, 131072 context, one CSV repair, one background
 Both repairs preserved public files and passed the public and hidden code checks. The padded agent did not settle within the 360-second task deadline; correct code alone is insufficient for a full pass. Its finalized RPC usage/context-condition evidence was unavailable after the timeout, so this is not counted as a validated long-context success. Generation speed includes generated reasoning and excludes tool/prefill latency. Memory is sampled total adapter use, including the desktop, rather than isolated model allocation.
 
 The controller cleaned up its server and inference lock. Its UI/exit handling was corrected after this run: it displays PASS/TIMEOUT per trial and returns a failing exit status when any coding trial fails, even if the controller itself completed. Regression fixtures replay this distinction without sending another model prompt. The production profile is isolated from development-run compaction settings.
+## Qwen3.8 27B real localization trial — October 23, 2026
+
+This task asked Pi App to localize Chinese slash-command descriptions, using the same initial prompt as a prior cloud-model trial. The target was the **running command catalog**, retaining all 90 commands and translating 76 descriptions. Source-only edits and plausible prose did not count as success.
+
+Configuration: UD-IQ4_XS, 65536-token slot without synthetic padding, q4 KV, eight CPU FFN layers and one inference request at a time. Pi low/medium/high mapped to native low/medium/xhigh with 512/2048/4096 thinking tokens. An initial high request was excluded because conflicting request fields caused a template error; the mapping was corrected before the scored high run. An earlier low attempt that read a solved transcript was also excluded; ordinary searches subsequently excluded session directories.
+
+| Condition | Initial translated | Follow-up 1 translated | Follow-up 2 translated | Interpretation |
+|---|---:|---:|---:|---|
+| Low, original | 0/76 | 0/76 | 0/76 | Final round stopped after 193.7 seconds |
+| Medium | 0/76 | 0/76 | 0/76 | Final round stopped after 221.7 seconds |
+| High | 0/76 | 0/76 | 0/76 | Each round received approximately eight minutes |
+| Low, branched final-round replay | — | — | **76/76** | Functional runtime pass after 475.9 seconds; closing response interrupted |
+
+The replay forked immediately before low's final follow-up, retained its preceding history and used the identical prompt. It created 37 complete adapter overrides through PowerShell. Independent inspection found only presentation metadata changed, and the actual runtime catalog retained all 90 commands with zero Chinese descriptions. File-write tool counts alone would miss these shell writes. The agent had not finished its closing verification response at cutoff, so distinguish a working implementation from clean autonomous completion. No full behavioral regression of every slash command was performed.
+
+The original 20-minute condition limit included controller gaps and unfairly shortened low/medium's final rounds. Results are **censored at their time limits**, not proof the models could never solve the task. Later rounds use independent eight-minute allowances. Generation was approximately 14–16 tokens/second; the restarted runtime's weighted mean was 14.55 TPS across high and the low replay together, not an isolated per-effort metric. Sampled total GPU use peaked at 15847 MiB for medium, 15772 MiB for high and 15682 MiB for the replay; this includes desktop use and is not isolated model allocation.
+
+The prior cloud model took 88.4 seconds initially and 82.1 seconds after a screenshot follow-up to implement the fix. Its TPS was not measured; assuming 50 TPS cannot establish a speed-normalized model ranking. The successful low replay shows why elapsed-time limits must account for hardware throughput. This remains a single diagnostic task with steering, not a general coding benchmark or a 100k-context quality result.
+
+## Qwen3.8 Q4 throughput tuning (2026-10-24)
+
+The [performance checklist and measured alternatives](QWEN38-PERFORMANCE-TODO.md) separate short-input speed, near-full context generation, five-value recall, coding/tool regression, and Pi App memory overhead. Tests keep the pinned Q4 weights, q4_0 KV and enabled reasoning. Generation benchmarks intentionally cap output at 512 tokens and do not grade the unfinished program; correctness comes from separate completed tasks. Cached repeats preserve long occupied context but do not repeat cold ingestion. The baseline and candidate repair each require observed failure, minimal edit, unchanged public checks, rerun, 1,785 hidden assertions and normal completion. One small task cannot establish broad coding equivalence.

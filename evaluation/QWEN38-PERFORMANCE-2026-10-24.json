@@ -1,0 +1,2773 @@
+{
+  "date": "2026-10-24",
+  "hardware": "RTX 4090 Laptop GPU, 16376 MiB VRAM; i9-14900HX; 32 GiB RAM; native Windows",
+  "engine": "llama.cpp b11669",
+  "model": "Qwen3.8-27B UD-IQ4_XS",
+  "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+  "sha256": "40fac4050e940397dbf13087afd50f4734a11805bf9d65ef8ddd7483470e6199",
+  "kv": "q4_0 keys and values",
+  "reasoning": "enabled, medium, 2048 token budget",
+  "sampling": {
+    "temperature": 1,
+    "topP": 0.95,
+    "topK": 20,
+    "minP": 0,
+    "seeds": "42+i"
+  },
+  "limitations": [
+    "Throughput outputs are intentionally capped and are not correctness grades.",
+    "Cached repeats measure decode at the same occupied context; first request is cold.",
+    "Total GPU includes desktop; shared allocation alone does not establish active paging."
+  ],
+  "trials": [
+    {
+      "id": "final-96k-largest3-50k-t24",
+      "stage": "complete",
+      "configuration": {
+        "repeats": 3,
+        "threads": 24,
+        "outputTokens": 512,
+        "context": 98304,
+        "ubatch": 64,
+        "layers": [
+          58,
+          59,
+          63
+        ],
+        "id": "final-96k-largest3-50k-t24",
+        "inputTokens": 50000
+      },
+      "actualInputTokens": 49674,
+      "generationTps": [
+        21.14,
+        21.17,
+        21.22
+      ],
+      "medianGenerationTps": 21.17,
+      "weightedGenerationTps": 21.176501791092775,
+      "coldPrompt": [
+        {
+          "milliseconds": 87255.93,
+          "tokens": 49674,
+          "tps": 569.29
+        }
+      ],
+      "coldLatencyMs": 111534.38660000001,
+      "outputTokens": [
+        512,
+        512,
+        512
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 49674,
+            "total_tokens": 50186,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 111534.38660000001,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 24170.04,
+                "tokens": 512,
+                "tps": 21.14
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 87255.93,
+                "tokens": 49674,
+                "tps": 569.29
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 49674,
+            "total_tokens": 50186,
+            "prompt_tokens_details": {
+              "cached_tokens": 49670
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 24460.521099999998,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 24135.49,
+                "tokens": 512,
+                "tps": 21.17
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 209.05,
+                "tokens": 4,
+                "tps": 19.13
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 49674,
+            "total_tokens": 50186,
+            "prompt_tokens_details": {
+              "cached_tokens": 49670
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 24411.9387,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 24086.03,
+                "tokens": 512,
+                "tps": 21.22
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 206.74,
+                "tokens": 4,
+                "tps": 19.35
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15857,
+      "minFreeRamBytes": 6724210688,
+      "gpuProcess": {
+        "dedicatedBytes": 15489179648,
+        "sharedBytes": 100663296
+      }
+    },
+    {
+      "id": "final-96k-largest3-8k-t24",
+      "stage": "complete",
+      "configuration": {
+        "repeats": 3,
+        "threads": 24,
+        "outputTokens": 512,
+        "context": 98304,
+        "ubatch": 64,
+        "layers": [
+          58,
+          59,
+          63
+        ],
+        "id": "final-96k-largest3-8k-t24",
+        "inputTokens": 8192
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        23.9,
+        23.92,
+        23.98
+      ],
+      "medianGenerationTps": 23.92,
+      "weightedGenerationTps": 23.933757354790554,
+      "coldPrompt": [
+        {
+          "milliseconds": 12612.71,
+          "tokens": 7866,
+          "tps": 623.66
+        }
+      ],
+      "coldLatencyMs": 34034.415,
+      "outputTokens": [
+        512,
+        512,
+        512
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 7866,
+            "total_tokens": 8378,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 34034.415,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 21359.52,
+                "tokens": 512,
+                "tps": 23.92
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 12612.71,
+                "tokens": 7866,
+                "tps": 623.66
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 7866,
+            "total_tokens": 8378,
+            "prompt_tokens_details": {
+              "cached_tokens": 7862
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 21609.9072,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 21382.52,
+                "tokens": 512,
+                "tps": 23.9
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 185.71,
+                "tokens": 4,
+                "tps": 21.54
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 7866,
+            "total_tokens": 8378,
+            "prompt_tokens_details": {
+              "cached_tokens": 7862
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 21528.9899,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 21309.75,
+                "tokens": 512,
+                "tps": 23.98
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 176.63,
+                "tokens": 4,
+                "tps": 22.65
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15857,
+      "minFreeRamBytes": 7102681088,
+      "gpuProcess": {
+        "dedicatedBytes": 15489179648,
+        "sharedBytes": 100663296
+      }
+    },
+    {
+      "id": "final-96k-largest3-long-t32",
+      "stage": "complete",
+      "configuration": {
+        "repeats": 3,
+        "threads": 32,
+        "outputTokens": 512,
+        "context": 98304,
+        "ubatch": 64,
+        "layers": [
+          58,
+          59,
+          63
+        ],
+        "id": "final-96k-largest3-long-t32",
+        "inputTokens": 88473
+      },
+      "actualInputTokens": 88146,
+      "generationTps": [
+        18.64,
+        18.68,
+        18.71
+      ],
+      "medianGenerationTps": 18.68,
+      "weightedGenerationTps": 18.676534244394084,
+      "coldPrompt": [
+        {
+          "milliseconds": 173118.49,
+          "tokens": 88146,
+          "tps": 509.17
+        }
+      ],
+      "coldLatencyMs": 200608.508,
+      "outputTokens": [
+        512,
+        512,
+        512
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 200608.508,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 27315.99,
+                "tokens": 512,
+                "tps": 18.71
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 173118.49,
+                "tokens": 88146,
+                "tps": 509.17
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 88142
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 27755.77289999998,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 27356.44,
+                "tokens": 512,
+                "tps": 18.68
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 213.33,
+                "tokens": 4,
+                "tps": 18.75
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 88142
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 27809.569600000017,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 27409.18,
+                "tokens": 512,
+                "tps": 18.64
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 217.73,
+                "tokens": 4,
+                "tps": 18.37
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15857,
+      "minFreeRamBytes": 6666883072,
+      "gpuProcess": {
+        "dedicatedBytes": 15489179648,
+        "sharedBytes": 100663296
+      }
+    },
+    {
+      "id": "long-131k-largest12-mtp2-ub64-t24",
+      "stage": "failed",
+      "configuration": {
+        "id": "long-131k-largest12-mtp2-ub64-t24",
+        "context": 131072,
+        "layers": [
+          58,
+          59,
+          63,
+          60,
+          55,
+          56,
+          57,
+          21,
+          24,
+          25,
+          51,
+          62
+        ],
+        "threads": 24,
+        "ubatch": 64,
+        "inputTokens": 117964,
+        "outputTokens": 512,
+        "repeats": 3,
+        "mtp": true,
+        "depth": 2
+      },
+      "generationTps": [],
+      "medianGenerationTps": null,
+      "weightedGenerationTps": null,
+      "outputTokens": [],
+      "runs": [],
+      "peakAdapterMiB": 16016,
+      "minFreeRamBytes": 5556895744,
+      "gpuProcess": null,
+      "error": "Explicit request timeout 600000ms"
+    },
+    {
+      "id": "long-131k-largest6-t24",
+      "stage": "failed",
+      "configuration": {
+        "threads": 24,
+        "id": "long-131k-largest6-t24",
+        "context": 131072,
+        "layers": [
+          58,
+          59,
+          63,
+          60,
+          55,
+          56
+        ],
+        "inputTokens": 117964,
+        "outputTokens": 512,
+        "repeats": 3
+      },
+      "generationTps": [],
+      "medianGenerationTps": null,
+      "weightedGenerationTps": null,
+      "outputTokens": [],
+      "runs": [],
+      "peakAdapterMiB": 15904,
+      "minFreeRamBytes": 7408316416,
+      "gpuProcess": null,
+      "error": "fetch failed",
+      "classification": "benchmark-client-headers-timeout; not a model failure"
+    },
+    {
+      "id": "long-131k-largest6-ub64-t24",
+      "stage": "complete",
+      "configuration": {
+        "id": "long-131k-largest6-ub64-t24",
+        "context": 131072,
+        "layers": [
+          58,
+          59,
+          63,
+          60,
+          55,
+          56
+        ],
+        "inputTokens": 117964,
+        "outputTokens": 512,
+        "repeats": 3,
+        "threads": 24,
+        "ubatch": 64
+      },
+      "actualInputTokens": 117638,
+      "generationTps": [
+        12.64,
+        12.7,
+        12.75
+      ],
+      "medianGenerationTps": 12.7,
+      "weightedGenerationTps": 12.693476149430282,
+      "coldPrompt": [
+        {
+          "milliseconds": 404803.11,
+          "tokens": 117638,
+          "tps": 290.61
+        }
+      ],
+      "coldLatencyMs": 445254.0326,
+      "outputTokens": [
+        512,
+        512,
+        512
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 117638,
+            "total_tokens": 118150,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 445254.0326,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 40244.91,
+                "tokens": 512,
+                "tps": 12.7
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 404803.11,
+                "tokens": 117638,
+                "tps": 290.61
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 117638,
+            "total_tokens": 118150,
+            "prompt_tokens_details": {
+              "cached_tokens": 117634
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 40596.861199999985,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 40091.19,
+                "tokens": 512,
+                "tps": 12.75
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 261.62,
+                "tokens": 4,
+                "tps": 15.29
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 117638,
+            "total_tokens": 118150,
+            "prompt_tokens_details": {
+              "cached_tokens": 117634
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 40926.41300000006,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 40434.6,
+                "tokens": 512,
+                "tps": 12.64
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 254.57,
+                "tokens": 4,
+                "tps": 15.71
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15934,
+      "minFreeRamBytes": 6874238976,
+      "gpuProcess": {
+        "dedicatedBytes": 15514816512,
+        "sharedBytes": 339738624
+      }
+    },
+    {
+      "id": "long-96k-largest2-ub64-t24",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 24,
+        "ubatch": 64,
+        "inputTokens": 88473,
+        "outputTokens": 512,
+        "repeats": 3,
+        "id": "long-96k-largest2-ub64-t24",
+        "layers": [
+          58,
+          59
+        ]
+      },
+      "actualInputTokens": 88146,
+      "generationTps": [
+        16.93,
+        16.95,
+        16.99
+      ],
+      "medianGenerationTps": 16.95,
+      "weightedGenerationTps": 16.95554318514911,
+      "coldPrompt": [
+        {
+          "milliseconds": 195930.6,
+          "tokens": 88146,
+          "tps": 449.88
+        }
+      ],
+      "coldLatencyMs": 226286.65780000002,
+      "outputTokens": [
+        512,
+        512,
+        512
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 226286.65780000002,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 30186.52,
+                "tokens": 512,
+                "tps": 16.93
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 195930.6,
+                "tokens": 88146,
+                "tps": 449.88
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 88142
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 30456.46670000002,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 30070.29,
+                "tokens": 512,
+                "tps": 16.99
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 212.3,
+                "tokens": 4,
+                "tps": 18.84
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 88142
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 30563.19669999997,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 30156.1,
+                "tokens": 512,
+                "tps": 16.95
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 226.01,
+                "tokens": 4,
+                "tps": 17.7
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15886,
+      "minFreeRamBytes": 6612385792,
+      "gpuProcess": {
+        "dedicatedBytes": 15556517888,
+        "sharedBytes": 216006656
+      }
+    },
+    {
+      "id": "long-96k-largest3-ub64-t24",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 24,
+        "ubatch": 64,
+        "inputTokens": 88473,
+        "outputTokens": 512,
+        "repeats": 3,
+        "id": "long-96k-largest3-ub64-t24",
+        "layers": [
+          58,
+          59,
+          63
+        ]
+      },
+      "actualInputTokens": 88146,
+      "generationTps": [
+        19.03,
+        19.08,
+        19.08
+      ],
+      "medianGenerationTps": 19.08,
+      "weightedGenerationTps": 19.06059728178227,
+      "coldPrompt": [
+        {
+          "milliseconds": 177336.34,
+          "tokens": 88146,
+          "tps": 497.06
+        }
+      ],
+      "coldLatencyMs": 204376.748,
+      "outputTokens": [
+        512,
+        512,
+        512
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 204376.748,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 26858.48,
+                "tokens": 512,
+                "tps": 19.03
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 177336.34,
+                "tokens": 88146,
+                "tps": 497.06
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 88142
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 27180.73000000001,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 26785.62,
+                "tokens": 512,
+                "tps": 19.08
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 210.53,
+                "tokens": 4,
+                "tps": 19
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 88142
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 27172.237800000003,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 26783.6,
+                "tokens": 512,
+                "tps": 19.08
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 207.67,
+                "tokens": 4,
+                "tps": 19.26
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15936,
+      "minFreeRamBytes": 7078731776,
+      "gpuProcess": {
+        "dedicatedBytes": 15489179648,
+        "sharedBytes": 100663296
+      }
+    },
+    {
+      "id": "long-96k-largest4-t24",
+      "stage": "complete",
+      "configuration": {
+        "threads": 24,
+        "id": "long-96k-largest4-t24",
+        "context": 98304,
+        "layers": [
+          58,
+          59,
+          63,
+          60
+        ],
+        "inputTokens": 88473,
+        "outputTokens": 512,
+        "repeats": 3
+      },
+      "actualInputTokens": 88146,
+      "generationTps": [
+        17.82,
+        17.83,
+        17.87
+      ],
+      "medianGenerationTps": 17.83,
+      "weightedGenerationTps": 17.841169598647003,
+      "coldPrompt": [
+        {
+          "milliseconds": 138957.11,
+          "tokens": 88146,
+          "tps": 634.34
+        }
+      ],
+      "coldLatencyMs": 167778.178,
+      "outputTokens": [
+        512,
+        512,
+        512
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 167778.178,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 28663.08,
+                "tokens": 512,
+                "tps": 17.83
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 138957.11,
+                "tokens": 88146,
+                "tps": 634.34
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 88142
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 29071.886499999993,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 28671.06,
+                "tokens": 512,
+                "tps": 17.82
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 218.07,
+                "tokens": 4,
+                "tps": 18.34
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 88142
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 28988.978899999987,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 28590.72,
+                "tokens": 512,
+                "tps": 17.87
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 215.89,
+                "tokens": 4,
+                "tps": 18.53
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15943,
+      "minFreeRamBytes": 7706722304,
+      "gpuProcess": {
+        "dedicatedBytes": 15346606080,
+        "sharedBytes": 119537664
+      }
+    },
+    {
+      "id": "long-96k-largest4-ub64-t24",
+      "stage": "complete",
+      "configuration": {
+        "id": "long-96k-largest4-ub64-t24",
+        "context": 98304,
+        "layers": [
+          58,
+          59,
+          63,
+          60
+        ],
+        "inputTokens": 88473,
+        "outputTokens": 512,
+        "repeats": 3,
+        "threads": 24,
+        "ubatch": 64
+      },
+      "actualInputTokens": 88146,
+      "generationTps": [
+        17.81,
+        17.84,
+        17.84
+      ],
+      "medianGenerationTps": 17.84,
+      "weightedGenerationTps": 17.828919134861295,
+      "coldPrompt": [
+        {
+          "milliseconds": 200131.55,
+          "tokens": 88146,
+          "tps": 440.44
+        }
+      ],
+      "coldLatencyMs": 229002.71289999998,
+      "outputTokens": [
+        512,
+        512,
+        512
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 229002.71289999998,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 28696.31,
+                "tokens": 512,
+                "tps": 17.81
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 200131.55,
+                "tokens": 88146,
+                "tps": 440.44
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 88142
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 29032.438300000038,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 28638.55,
+                "tokens": 512,
+                "tps": 17.84
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 212.85,
+                "tokens": 4,
+                "tps": 18.79
+              }
+            ]
+          }
+        },
+        {
+          "usage": {
+            "completion_tokens": 512,
+            "prompt_tokens": 88146,
+            "total_tokens": 88658,
+            "prompt_tokens_details": {
+              "cached_tokens": 88142
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 29047.01649999997,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 28649.04,
+                "tokens": 512,
+                "tps": 17.84
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 216.25,
+                "tokens": 4,
+                "tps": 18.5
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15807,
+      "minFreeRamBytes": 6991540224,
+      "gpuProcess": {
+        "dedicatedBytes": 15319306240,
+        "sharedBytes": 100663296
+      }
+    },
+    {
+      "id": "screen-96k-ffn0-ub64-t24",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 24,
+        "ubatch": 64,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "id": "screen-96k-ffn0-ub64-t24",
+        "ffn": 0
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        28.35
+      ],
+      "medianGenerationTps": 28.35,
+      "weightedGenerationTps": 28.351163064771846,
+      "coldPrompt": [
+        {
+          "milliseconds": 9811.24,
+          "tokens": 7866,
+          "tps": 801.73
+        }
+      ],
+      "coldLatencyMs": 18868.1999,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 18868.1999,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 8994.34,
+                "tokens": 256,
+                "tps": 28.35
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 9811.24,
+                "tokens": 7866,
+                "tps": 801.73
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15982,
+      "minFreeRamBytes": 6443274240,
+      "gpuProcess": {
+        "dedicatedBytes": 15839805440,
+        "sharedBytes": 301989888
+      }
+    },
+    {
+      "id": "screen-96k-ffn2-ub64-t24",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 24,
+        "ubatch": 64,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "id": "screen-96k-ffn2-ub64-t24",
+        "ffn": 2
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        25.31
+      ],
+      "medianGenerationTps": 25.31,
+      "weightedGenerationTps": 25.31331430698598,
+      "coldPrompt": [
+        {
+          "milliseconds": 11110.18,
+          "tokens": 7866,
+          "tps": 708
+        }
+      ],
+      "coldLatencyMs": 21247.050199999998,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 21247.050199999998,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 10073.75,
+                "tokens": 256,
+                "tps": 25.31
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 11110.18,
+                "tokens": 7866,
+                "tps": 708
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15944,
+      "minFreeRamBytes": 6958895104,
+      "gpuProcess": {
+        "dedicatedBytes": 15805984768,
+        "sharedBytes": 167772160
+      }
+    },
+    {
+      "id": "screen-96k-ffn4-t24",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 24,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "id": "screen-96k-ffn4-t24",
+        "ffn": 4
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        17.05
+      ],
+      "medianGenerationTps": 17.05,
+      "weightedGenerationTps": 17.04902162016518,
+      "coldPrompt": [
+        {
+          "milliseconds": 11900.19,
+          "tokens": 7866,
+          "tps": 661
+        }
+      ],
+      "coldLatencyMs": 26923.0625,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 26923.0625,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 14956.87,
+                "tokens": 256,
+                "tps": 17.05
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 11900.19,
+                "tokens": 7866,
+                "tps": 661
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15849,
+      "minFreeRamBytes": 7099695104,
+      "gpuProcess": {
+        "dedicatedBytes": 15476994048,
+        "sharedBytes": 301989888
+      }
+    },
+    {
+      "id": "screen-96k-ffn6-t24",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 24,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "id": "screen-96k-ffn6-t24",
+        "ffn": 6
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        17.73
+      ],
+      "medianGenerationTps": 17.73,
+      "weightedGenerationTps": 17.730866309268027,
+      "coldPrompt": [
+        {
+          "milliseconds": 11252.42,
+          "tokens": 7866,
+          "tps": 699.05
+        }
+      ],
+      "coldLatencyMs": 25704.901399999995,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 25704.901399999995,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 14381.7,
+                "tokens": 256,
+                "tps": 17.73
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 11252.42,
+                "tokens": 7866,
+                "tps": 699.05
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15866,
+      "minFreeRamBytes": 7405678592,
+      "gpuProcess": {
+        "dedicatedBytes": 15417909248,
+        "sharedBytes": 119537664
+      }
+    },
+    {
+      "id": "screen-96k-ffn8-t12",
+      "stage": "complete",
+      "configuration": {
+        "id": "screen-96k-ffn8-t12",
+        "context": 98304,
+        "ffn": 8,
+        "threads": 12,
+        "inputTokens": 8192,
+        "outputTokens": 256
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        13.96
+      ],
+      "medianGenerationTps": 13.96,
+      "weightedGenerationTps": 13.964759518626526,
+      "coldPrompt": [
+        {
+          "milliseconds": 13334.69,
+          "tokens": 7866,
+          "tps": 589.89
+        }
+      ],
+      "coldLatencyMs": 31656.338799999998,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 31656.338799999998,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 18260.25,
+                "tokens": 256,
+                "tps": 13.96
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 13334.69,
+                "tokens": 7866,
+                "tps": 589.89
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15741,
+      "minFreeRamBytes": 7766528000,
+      "gpuProcess": {
+        "dedicatedBytes": 15149473792,
+        "sharedBytes": 119537664
+      }
+    },
+    {
+      "id": "screen-96k-ffn8-t24",
+      "stage": "complete",
+      "configuration": {
+        "id": "screen-96k-ffn8-t24",
+        "context": 98304,
+        "ffn": 8,
+        "threads": 24,
+        "inputTokens": 8192,
+        "outputTokens": 256
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        15.28
+      ],
+      "medianGenerationTps": 15.28,
+      "weightedGenerationTps": 15.280550914795647,
+      "coldPrompt": [
+        {
+          "milliseconds": 13949.98,
+          "tokens": 7866,
+          "tps": 563.87
+        }
+      ],
+      "coldLatencyMs": 30702.4421,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 30702.4421,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 16687.88,
+                "tokens": 256,
+                "tps": 15.28
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 13949.98,
+                "tokens": 7866,
+                "tps": 563.87
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15701,
+      "minFreeRamBytes": 7287185408,
+      "gpuProcess": {
+        "dedicatedBytes": 15149473792,
+        "sharedBytes": 119537664
+      }
+    },
+    {
+      "id": "screen-96k-ffn8-t32",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 32,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "id": "screen-96k-ffn8-t32",
+        "ffn": 8
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        15.78
+      ],
+      "medianGenerationTps": 15.78,
+      "weightedGenerationTps": 15.782857588490769,
+      "coldPrompt": [
+        {
+          "milliseconds": 13314.03,
+          "tokens": 7866,
+          "tps": 590.81
+        }
+      ],
+      "coldLatencyMs": 29539.074399999998,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 29539.074399999998,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 16156.77,
+                "tokens": 256,
+                "tps": 15.78
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 13314.03,
+                "tokens": 7866,
+                "tps": 590.81
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15644,
+      "minFreeRamBytes": 8558985216,
+      "gpuProcess": {
+        "dedicatedBytes": 15149473792,
+        "sharedBytes": 119537664
+      }
+    },
+    {
+      "id": "screen-96k-ffn8-t4",
+      "stage": "complete",
+      "configuration": {
+        "id": "screen-96k-ffn8-t4",
+        "context": 98304,
+        "ffn": 8,
+        "threads": 4,
+        "inputTokens": 8192,
+        "outputTokens": 256
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        7.98
+      ],
+      "medianGenerationTps": 7.98,
+      "weightedGenerationTps": 7.978139272656508,
+      "coldPrompt": [
+        {
+          "milliseconds": 14251.69,
+          "tokens": 7866,
+          "tps": 551.93
+        }
+      ],
+      "coldLatencyMs": 46274.2832,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 46274.2832,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 31962.34,
+                "tokens": 256,
+                "tps": 7.98
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 14251.69,
+                "tokens": 7866,
+                "tps": 551.93
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15768,
+      "minFreeRamBytes": 7796502528,
+      "gpuProcess": {
+        "dedicatedBytes": 15149473792,
+        "sharedBytes": 119537664
+      }
+    },
+    {
+      "id": "screen-96k-ffn8-t8",
+      "stage": "complete",
+      "configuration": {
+        "id": "screen-96k-ffn8-t8",
+        "context": 98304,
+        "ffn": 8,
+        "threads": 8,
+        "inputTokens": 8192,
+        "outputTokens": 256
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        12.33
+      ],
+      "medianGenerationTps": 12.33,
+      "weightedGenerationTps": 12.333688672546852,
+      "coldPrompt": [
+        {
+          "milliseconds": 13882.56,
+          "tokens": 7866,
+          "tps": 566.61
+        }
+      ],
+      "coldLatencyMs": 34620.2736,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 34620.2736,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 20675.08,
+                "tokens": 256,
+                "tps": 12.33
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 13882.56,
+                "tokens": 7866,
+                "tps": 566.61
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15788,
+      "minFreeRamBytes": 7771136000,
+      "gpuProcess": {
+        "dedicatedBytes": 15149473792,
+        "sharedBytes": 119537664
+      }
+    },
+    {
+      "id": "screen-96k-largest2-ub64-t24",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 24,
+        "ubatch": 64,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "id": "screen-96k-largest2-ub64-t24",
+        "layers": [
+          58,
+          59
+        ]
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        25.77
+      ],
+      "medianGenerationTps": 25.77,
+      "weightedGenerationTps": 25.77408158355957,
+      "coldPrompt": [
+        {
+          "milliseconds": 12548.25,
+          "tokens": 7866,
+          "tps": 626.86
+        }
+      ],
+      "coldLatencyMs": 22519.747899999995,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 22519.747899999995,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 9893.66,
+                "tokens": 256,
+                "tps": 25.77
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 12548.25,
+                "tokens": 7866,
+                "tps": 626.86
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15923,
+      "minFreeRamBytes": 7051616256,
+      "gpuProcess": {
+        "dedicatedBytes": 15671631872,
+        "sharedBytes": 100663296
+      }
+    },
+    {
+      "id": "screen-96k-largest3-ub64-t24",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 24,
+        "ubatch": 64,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "id": "screen-96k-largest3-ub64-t24",
+        "layers": [
+          58,
+          59,
+          63
+        ]
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        23.6
+      ],
+      "medianGenerationTps": 23.6,
+      "weightedGenerationTps": 23.59671274657408,
+      "coldPrompt": [
+        {
+          "milliseconds": 12651.15,
+          "tokens": 7866,
+          "tps": 621.76
+        }
+      ],
+      "coldLatencyMs": 23530.916600000004,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 23530.916600000004,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 10806.59,
+                "tokens": 256,
+                "tps": 23.6
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 12651.15,
+                "tokens": 7866,
+                "tps": 621.76
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15749,
+      "minFreeRamBytes": 6938607616,
+      "gpuProcess": {
+        "dedicatedBytes": 15489179648,
+        "sharedBytes": 100663296
+      }
+    },
+    {
+      "id": "screen-96k-largest4-t24",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 24,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "id": "screen-96k-largest4-t24",
+        "layers": [
+          58,
+          59,
+          63,
+          60
+        ]
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        21.37
+      ],
+      "medianGenerationTps": 21.37,
+      "weightedGenerationTps": 21.373825696870536,
+      "coldPrompt": [
+        {
+          "milliseconds": 10097.14,
+          "tokens": 7866,
+          "tps": 779.03
+        }
+      ],
+      "coldLatencyMs": 22095.0017,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 22095.0017,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 11930.48,
+                "tokens": 256,
+                "tps": 21.37
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 10097.14,
+                "tokens": 7866,
+                "tps": 779.03
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15794,
+      "minFreeRamBytes": 8437002240,
+      "gpuProcess": {
+        "dedicatedBytes": 15344508928,
+        "sharedBytes": 119537664
+      }
+    },
+    {
+      "id": "screen-96k-largest6-t24",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 24,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "id": "screen-96k-largest6-t24",
+        "layers": [
+          58,
+          59,
+          63,
+          60,
+          55,
+          56
+        ]
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        18.89
+      ],
+      "medianGenerationTps": 18.89,
+      "weightedGenerationTps": 18.885461527352444,
+      "coldPrompt": [
+        {
+          "milliseconds": 12359.02,
+          "tokens": 7866,
+          "tps": 636.46
+        }
+      ],
+      "coldLatencyMs": 25923.104199999994,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 25923.104199999994,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 13502.45,
+                "tokens": 256,
+                "tps": 18.89
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 12359.02,
+                "tokens": 7866,
+                "tps": 636.46
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15532,
+      "minFreeRamBytes": 8366481408,
+      "gpuProcess": {
+        "dedicatedBytes": 15032033280,
+        "sharedBytes": 119537664
+      }
+    },
+    {
+      "id": "screen-96k-largest8-mtp1",
+      "stage": "complete",
+      "configuration": {
+        "id": "screen-96k-largest8-mtp1",
+        "context": 98304,
+        "layers": [
+          58,
+          59,
+          63,
+          60,
+          55,
+          56,
+          57,
+          21
+        ],
+        "threads": 24,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "mtp": true,
+        "depth": 1
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        13.95
+      ],
+      "medianGenerationTps": 13.95,
+      "weightedGenerationTps": 13.954954501375793,
+      "coldPrompt": [
+        {
+          "milliseconds": 19036.93,
+          "tokens": 7866,
+          "tps": 413.2
+        }
+      ],
+      "coldLatencyMs": 37382.6777,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 37382.6777,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 18273.08,
+                "tokens": 256,
+                "tps": 13.95
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 19036.93,
+                "tokens": 7866,
+                "tps": 413.2
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15891,
+      "minFreeRamBytes": 7197544448,
+      "gpuProcess": {
+        "dedicatedBytes": 15454146560,
+        "sharedBytes": 415236096
+      }
+    },
+    {
+      "id": "screen-96k-largest8-mtp2",
+      "stage": "complete",
+      "configuration": {
+        "id": "screen-96k-largest8-mtp2",
+        "context": 98304,
+        "layers": [
+          58,
+          59,
+          63,
+          60,
+          55,
+          56,
+          57,
+          21
+        ],
+        "threads": 24,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "mtp": true,
+        "depth": 2
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        25.48
+      ],
+      "medianGenerationTps": 25.48,
+      "weightedGenerationTps": 25.481755063374624,
+      "coldPrompt": [
+        {
+          "milliseconds": 20405.05,
+          "tokens": 7866,
+          "tps": 385.49
+        }
+      ],
+      "coldLatencyMs": 30475.0023,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 30475.0023,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 10007.16,
+                "tokens": 256,
+                "tps": 25.48
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 20405.05,
+                "tokens": 7866,
+                "tps": 385.49
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15938,
+      "minFreeRamBytes": 7269310464,
+      "gpuProcess": {
+        "dedicatedBytes": 15573766144,
+        "sharedBytes": 457179136
+      }
+    },
+    {
+      "id": "screen-96k-top6-t24",
+      "stage": "complete",
+      "configuration": {
+        "context": 98304,
+        "threads": 24,
+        "inputTokens": 8192,
+        "outputTokens": 256,
+        "id": "screen-96k-top6-t24",
+        "layers": [
+          58,
+          59,
+          60,
+          61,
+          62,
+          63
+        ]
+      },
+      "actualInputTokens": 7866,
+      "generationTps": [
+        19.12
+      ],
+      "medianGenerationTps": 19.12,
+      "weightedGenerationTps": 19.120645273039063,
+      "coldPrompt": [
+        {
+          "milliseconds": 12240.28,
+          "tokens": 7866,
+          "tps": 642.63
+        }
+      ],
+      "coldLatencyMs": 25641.9081,
+      "outputTokens": [
+        256
+      ],
+      "runs": [
+        {
+          "usage": {
+            "completion_tokens": 256,
+            "prompt_tokens": 7866,
+            "total_tokens": 8122,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "finishReason": "length",
+          "elapsedMs": 25641.9081,
+          "timing": {
+            "generation": [
+              {
+                "milliseconds": 13336.37,
+                "tokens": 256,
+                "tps": 19.12
+              }
+            ],
+            "prompt": [
+              {
+                "milliseconds": 12240.28,
+                "tokens": 7866,
+                "tps": 642.63
+              }
+            ]
+          }
+        }
+      ],
+      "peakAdapterMiB": 15556,
+      "minFreeRamBytes": 8258232320,
+      "gpuProcess": {
+        "dedicatedBytes": 15057199104,
+        "sharedBytes": 119537664
+      }
+    }
+  ],
+  "quality": {
+    "phase": "complete",
+    "recallPassed": true,
+    "baselinePassed": true,
+    "candidatePassed": true,
+    "steps": [
+      {
+        "id": "quality-recall",
+        "trials": [
+          {
+            "context": 98304,
+            "inputTokens": 88237,
+            "occupancyPercent": 89.75931803385416,
+            "needlesCorrect": 5,
+            "validJson": true,
+            "toolFree": true,
+            "taskContractPassed": true,
+            "inferencePassed": true,
+            "usage": [
+              {
+                "input": 88237,
+                "output": 223,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 88460,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              }
+            ],
+            "timings": {
+              "prompt": [
+                {
+                  "milliseconds": 173394.58,
+                  "tokens": 88237,
+                  "tps": 508.88
+                }
+              ],
+              "generation": [
+                {
+                  "milliseconds": 11797.98,
+                  "tokens": 223,
+                  "tps": 18.82
+                }
+              ],
+              "promptTpsMean": 508.88,
+              "generationTpsMean": 18.82,
+              "generationTpsWeighted": 18.816780499712664
+            },
+            "peakGpuMiB": 15866,
+            "minFreeRamBytes": 6531694592
+          }
+        ]
+      },
+      {
+        "id": "quality-baseline",
+        "trials": [
+          {
+            "actualTestPassed": true,
+            "hiddenPassed": true,
+            "testFilePreserved": true,
+            "observedAndReranTests": true,
+            "initialFailureObserved": true,
+            "finalStopReason": "stop",
+            "toolCalls": 6,
+            "durationMs": 79564,
+            "usage": [
+              {
+                "input": 1985,
+                "output": 172,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 2157,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              },
+              {
+                "input": 91,
+                "output": 86,
+                "cacheRead": 2156,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 2333,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              },
+              {
+                "input": 402,
+                "output": 172,
+                "cacheRead": 2332,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 2906,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              },
+              {
+                "input": 82,
+                "output": 118,
+                "cacheRead": 2905,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 3105,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              },
+              {
+                "input": 29,
+                "output": 100,
+                "cacheRead": 3104,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 3233,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              },
+              {
+                "input": 19,
+                "output": 196,
+                "cacheRead": 3232,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 3447,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              }
+            ],
+            "timings": {
+              "prompt": [
+                {
+                  "milliseconds": 3906.91,
+                  "tokens": 1985,
+                  "tps": 508.07
+                },
+                {
+                  "milliseconds": 540.3,
+                  "tokens": 91,
+                  "tps": 168.42
+                },
+                {
+                  "milliseconds": 1189.34,
+                  "tokens": 402,
+                  "tps": 338
+                },
+                {
+                  "milliseconds": 525.61,
+                  "tokens": 82,
+                  "tps": 156.01
+                },
+                {
+                  "milliseconds": 632.55,
+                  "tokens": 29,
+                  "tps": 45.85
+                },
+                {
+                  "milliseconds": 587,
+                  "tokens": 19,
+                  "tps": 32.37
+                }
+              ],
+              "generation": [
+                {
+                  "milliseconds": 10738.75,
+                  "tokens": 172,
+                  "tps": 15.92
+                },
+                {
+                  "milliseconds": 5291.21,
+                  "tokens": 86,
+                  "tps": 16.06
+                },
+                {
+                  "milliseconds": 10410.97,
+                  "tokens": 172,
+                  "tps": 16.42
+                },
+                {
+                  "milliseconds": 7312.09,
+                  "tokens": 118,
+                  "tps": 16
+                },
+                {
+                  "milliseconds": 6093.31,
+                  "tokens": 100,
+                  "tps": 16.25
+                },
+                {
+                  "milliseconds": 12137.19,
+                  "tokens": 196,
+                  "tps": 16.07
+                }
+              ],
+              "promptTpsMean": 208.11999999999998,
+              "generationTpsMean": 16.12,
+              "generationTpsWeighted": 16.12049357180891
+            }
+          }
+        ]
+      },
+      {
+        "id": "quality-candidate",
+        "trials": [
+          {
+            "actualTestPassed": true,
+            "hiddenPassed": true,
+            "testFilePreserved": true,
+            "observedAndReranTests": true,
+            "initialFailureObserved": true,
+            "finalStopReason": "stop",
+            "toolCalls": 6,
+            "durationMs": 39439,
+            "usage": [
+              {
+                "input": 1985,
+                "output": 66,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 2051,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              },
+              {
+                "input": 91,
+                "output": 80,
+                "cacheRead": 2050,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 2221,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              },
+              {
+                "input": 402,
+                "output": 95,
+                "cacheRead": 2220,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 2717,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              },
+              {
+                "input": 28,
+                "output": 49,
+                "cacheRead": 2716,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 2793,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              },
+              {
+                "input": 29,
+                "output": 86,
+                "cacheRead": 2792,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 2907,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              },
+              {
+                "input": 19,
+                "output": 165,
+                "cacheRead": 2906,
+                "cacheWrite": 0,
+                "reasoning": 0,
+                "totalTokens": 3090,
+                "cost": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "total": 0
+                }
+              }
+            ],
+            "timings": {
+              "prompt": [
+                {
+                  "milliseconds": 3541.06,
+                  "tokens": 1985,
+                  "tps": 560.57
+                },
+                {
+                  "milliseconds": 482.89,
+                  "tokens": 91,
+                  "tps": 188.45
+                },
+                {
+                  "milliseconds": 956.51,
+                  "tokens": 402,
+                  "tps": 420.28
+                },
+                {
+                  "milliseconds": 332.88,
+                  "tokens": 28,
+                  "tps": 84.11
+                },
+                {
+                  "milliseconds": 335.79,
+                  "tokens": 29,
+                  "tps": 86.36
+                },
+                {
+                  "milliseconds": 309.98,
+                  "tokens": 19,
+                  "tps": 61.29
+                }
+              ],
+              "generation": [
+                {
+                  "milliseconds": 2843.1,
+                  "tokens": 66,
+                  "tps": 22.86
+                },
+                {
+                  "milliseconds": 3385.42,
+                  "tokens": 80,
+                  "tps": 23.34
+                },
+                {
+                  "milliseconds": 3888.45,
+                  "tokens": 95,
+                  "tps": 24.17
+                },
+                {
+                  "milliseconds": 1992.12,
+                  "tokens": 49,
+                  "tps": 24.09
+                },
+                {
+                  "milliseconds": 3511.69,
+                  "tokens": 86,
+                  "tps": 24.2
+                },
+                {
+                  "milliseconds": 6861.87,
+                  "tokens": 165,
+                  "tps": 23.9
+                }
+              ],
+              "promptTpsMean": 233.50999999999996,
+              "generationTpsMean": 23.76,
+              "generationTpsWeighted": 23.796127235890783
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "piApp": {
+    "finished": true,
+    "context": 98304,
+    "peakAdapterMiB": 15973,
+    "runs": [
+      {
+        "elapsedMs": 200703.3228,
+        "usage": {
+          "completion_tokens": 512,
+          "prompt_tokens": 88146,
+          "total_tokens": 88658,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "generation": [
+          {
+            "milliseconds": 26883.58,
+            "tokens": 512,
+            "tps": 19.01
+          }
+        ],
+        "prompt": [
+          {
+            "milliseconds": 173617.06,
+            "tokens": 88146,
+            "tps": 507.7
+          }
+        ]
+      },
+      {
+        "elapsedMs": 27366.13930000001,
+        "usage": {
+          "completion_tokens": 512,
+          "prompt_tokens": 88146,
+          "total_tokens": 88658,
+          "prompt_tokens_details": {
+            "cached_tokens": 88142
+          }
+        },
+        "generation": [
+          {
+            "milliseconds": 26894.19,
+            "tokens": 512,
+            "tps": 19
+          }
+        ],
+        "prompt": [
+          {
+            "milliseconds": 238.47,
+            "tokens": 4,
+            "tps": 16.77
+          }
+        ]
+      },
+      {
+        "elapsedMs": 27312.089699999982,
+        "usage": {
+          "completion_tokens": 512,
+          "prompt_tokens": 88146,
+          "total_tokens": 88658,
+          "prompt_tokens_details": {
+            "cached_tokens": 88142
+          }
+        },
+        "generation": [
+          {
+            "milliseconds": 26873.23,
+            "tokens": 512,
+            "tps": 19.02
+          }
+        ],
+        "prompt": [
+          {
+            "milliseconds": 218.03,
+            "tokens": 4,
+            "tps": 18.35
+          }
+        ]
+      }
+    ],
+    "systemMemory": {
+      "minFreeRamBytes": 5545582592,
+      "minAvailableRamBytes": 5473292288,
+      "peakCommittedBytes": 48577994752,
+      "minCommitHeadroomBytes": 14530895872
+    },
+    "gpu": {
+      "DedicatedUsage": 15487082496,
+      "SharedUsage": 100663296
+    }
+  },
+  "cpuTopology": {
+    "logicalProcessors": 32,
+    "classes": [
+      {
+        "logicalProcessors": 16,
+        "physicalCores": 16,
+        "efficiencyClass": "0"
+      },
+      {
+        "logicalProcessors": 16,
+        "physicalCores": 8,
+        "efficiencyClass": "1"
+      }
+    ],
+    "source": "Windows GetSystemCpuSetInformation"
+  },
+  "finalModelVerification": {
+    "sha256": "40fac4050e940397dbf13087afd50f4734a11805bf9d65ef8ddd7483470e6199",
+    "verifiedAt": "2026-10-24T11:27:26.5138573Z",
+    "size": 14252845984
+  },
+  "selected": {
+    "selector": "qwen38",
+    "context": 98304,
+    "cpuTensorLayers": [
+      58,
+      59,
+      63
+    ],
+    "threads": 24,
+    "microbatch": 64,
+    "mtp": false
+  }
+}

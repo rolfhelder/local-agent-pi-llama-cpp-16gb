@@ -3,14 +3,15 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
-import {root,machine,prepareProfile,acquireInferenceLock,ensureServer,exec} from './local-runtime.mjs';
+import {root,machine,requireModelFiles,modelSelectionError,prepareProfile,acquireInferenceLock,ensureServer,exec} from './local-runtime.mjs';
 import {consoleUI} from './console-ui.mjs';
 import {activity} from './terminal-activity.mjs';
+import {contextAppearance} from './pi-app-appearance.mjs';
 
 // Separate desktop launcher: one loaded model, the same request-budget hooks,
 // and a pinned SDK without modifying Pi App's executable or packaged source.
 const args=process.argv.slice(2);
-const value=(key,fallback)=>{const at=args.indexOf(key);if(at<0)return fallback;const result=args[at+1];if(!result||result.startsWith('--'))throw Error(key+' needs a value');args.splice(at,2);return result;};
+const value=(key,fallback)=>{const at=args.indexOf(key);if(at<0)return fallback;const result=args[at+1];if(!result||result.startsWith('--'))throw key==='--model'?modelSelectionError(key+' needs a value'):Error(key+' needs a value');args.splice(at,2);return result;};
 const flag=key=>{const at=args.indexOf(key);if(at<0)return false;args.splice(at,1);return true;};
 const noColor=flag('--no-color'),ascii=flag('--ascii');
 const ui=consoleUI([...(noColor?['--no-color']:[]),...(ascii?['--ascii']:[])]);
@@ -19,9 +20,14 @@ const start=text=>{busy?.stop();busy=activity({message:text,color:!noColor&&proc
 const done=text=>{busy?.stop();busy=undefined;ui.status(true,text);};
 ui.title('PI APP','One local model · llama.cpp · desktop workspace');
 try {
-const selected=value('--model','gemma'),requestedCwd=value('--cwd',undefined);
+const selected=value('--model','qwen38'),requestedCwd=value('--cwd',undefined);
 const configureOnly=flag('--configure-only'),attach=flag('--attach'),debug=value('--debug-port',undefined);
+const dryRun=flag('--dry-run');
 if(args.length)throw Error('Unknown arguments: '+args.join(' '));
+const config=await machine(selected);
+if(config.Runtime==='strata'&&attach)throw Error('Flash uses Strata. Close its owning launcher and start without --attach.');
+if(dryRun){const {serverArguments}=await import('./local-runtime.mjs');ui.row('Model',config.ModelId);ui.row('Runtime',config.Runtime??'llama.cpp');ui.row('Context',config.ContextSize+' tokens');ui.line(JSON.stringify(serverArguments(config)));ui.finish('Preview only; no settings changed or model started.');process.exit(0);}
+await requireModelFiles(config);
 start('Checking desktop and installation');
 if(!configureOnly){
  const existing=await exec('powershell.exe',['-NoProfile','-NonInteractive','-Command',"Get-CimInstance Win32_Process -Filter \"Name='pi Desktop.exe'\" | Where-Object {$_.CommandLine -notmatch '--type='} | Select-Object -ExpandProperty ProcessId"],{windowsHide:true});
@@ -35,7 +41,6 @@ done('Pi App installation verified');
 start('Preparing local model, effort settings and desktop SDK');
 const userData=path.join(process.env.APPDATA,'pi-desktop');
 const previousAppSettings=JSON.parse(await readFile(path.join(userData,'pi-desktop.json'),'utf8').catch(e=>{if(e.code==='ENOENT')return '{}';throw e;}));
-const config=await machine(selected);
 const cwd=path.resolve(requestedCwd??config.WorkingDirectory??previousAppSettings.currentProject??path.dirname(root));
 const prepared=await prepareProfile('pi-app',config,cwd);
 const preferences=JSON.parse(await readFile(prepared.env.PI_EFFORT_PREFERENCES,'utf8').catch(error=>{if(error.code==='ENOENT')return '{}';throw error;}));
@@ -50,6 +55,7 @@ const appSettingsPath=path.join(userData,'pi-desktop.json');
 const appSettings=await backup(appSettingsPath);
 Object.assign(appSettings,{maxSessionWorkers:1,sessionWorkerIdleTimeoutMinutes:5,autoCheckRegistryUpdates:false,autoOpenLastProject:true,currentProject:cwd,recentProjects:[cwd,...(appSettings.recentProjects||[]).filter(p=>p!==cwd)]});
 appSettings.rightPanelPrefs={...appSettings.rightPanelPrefs,run:true,context:true,browser:true,files:true};
+appSettings.customCssOverride=contextAppearance(appSettings.customCssOverride);
 await writeFile(appSettingsPath,JSON.stringify(appSettings,null,2)+'\n');
 // Supported user-SDK selection, with a small pinned metadata compatibility
 // entry. Imports resolve against the lab's complete locked dependency tree.
@@ -68,7 +74,7 @@ await writeFile(path.join(root,'.state/pi-app-launch.json'),JSON.stringify({mode
 done('Model, effort settings and desktop SDK configured');
 ui.row('Model',config.ModelId);
 ui.row('Context',config.ContextSize.toLocaleString('en-US')+' tokens');
-ui.row('Reasoning',config.Reasoning===false?'off':thinking+' (request budget presets)');
+ui.row('Reasoning',config.Reasoning===false?'off':thinking+(config.Runtime==='strata'?' (native effort)':' (request budget presets)'));
 ui.row('Response cap',config.MaxTokens.toLocaleString('en-US')+' tokens');
 ui.row('Pi settings',prepared.agentDir);
 ui.row('Workspace',cwd);
@@ -76,7 +82,7 @@ ui.row('Endpoint',config.RouterUrl);
 if(configureOnly){ui.finish('Configuration saved. Run local-ai-app to open the desktop.');} else {
 let release,server;
 try{
- start(attach?'Checking the existing llama.cpp server':'Loading model into GPU memory; waiting for llama.cpp health');
+ start(attach?'Checking the existing llama.cpp server':config.Runtime==='strata'?'Loading Flash with Strata; checking installed engine and model shards':'Loading model into GPU memory; waiting for llama.cpp health');
  if(attach){
   // Explicit opt-in for an existing pia-owned server. Never stop that server.
   const props=await (await fetch(config.RouterUrl+'/props')).json();

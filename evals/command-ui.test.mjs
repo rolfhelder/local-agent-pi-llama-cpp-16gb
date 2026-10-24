@@ -5,7 +5,18 @@ import path from 'node:path';
 import {root} from '../scripts/local-runtime.mjs';
 import {consoleUI} from '../scripts/console-ui.mjs';
 import {activity} from '../scripts/terminal-activity.mjs';
+import {contextAppearance} from '../scripts/pi-app-appearance.mjs';
 const launch=args=>spawnSync(process.execPath,[path.join(root,'scripts/pia.mjs'),...args],{encoding:'utf8',timeout:15000,cwd:root});
+
+test('desktop context styling preserves active custom CSS and applies only once',()=>{
+ const styled=contextAppearance({enabled:true,css:'.personal { color: blue; }'});
+ assert.ok(styled.css.includes('.personal { color: blue; }'));
+ assert.deepEqual(contextAppearance(styled),styled);
+ assert.ok(styled.css.includes('--local-ai-context-fill:100%'));
+ assert.ok(styled.css.includes('height:14px'));
+ assert.ok(styled.css.includes('content:attr(aria-label)'));
+ assert.ok(!contextAppearance({enabled:false,css:'.disabled { display:none; }'}).css.includes('.disabled'));
+});
 
 test('desktop startup reports its initial operation and readable errors before model loading',()=>{
  let text='';const busy=activity({message:'Loading model into GPU memory',stream:{write:s=>text+=s,isTTY:false},ascii:true});busy.stop();

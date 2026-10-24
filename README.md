@@ -20,7 +20,7 @@ The launcher prepares Pi, starts llama.cpp on loopback, and stops its owned serv
 
 | Harness | Inference runtime | Default model | Optional interface |
 |:--|:--|:--|:--|
-| Pi CLI 1.3.0 | llama.cpp b11669 / CUDA | Gemma 4 12B IT Q4_K_M | Pi App 0.7.6 |
+| Pi CLI 1.3.0 | llama.cpp b11669 / CUDA | Qwen3.8 27B UD-IQ4_XS | Pi App 0.7.6 |
 
 ## Built around a real 16 GB budget
 
@@ -59,16 +59,18 @@ Follow the [installation checklist and model-selection guide](docs/INSTALL.md) f
 
 ![Completed context capacity and sampled coding-run GPU memory](assets/model-comparison.png)
 
-Context bars show **completed inference capacity**, not dependable recall or coding quality. GPU-memory bars include the desktop and come from different configured windows. The operating default is 204800 tokens; GPT-OSS is capped at its native 131072.
+Context bars show **completed inference capacity**, not dependable recall or coding quality. GPU-memory bars include the desktop and come from different configured windows. These bars show the earlier four-model batch. The current Qwen3.8 27B default is **98,304 tokens**, with selected CPU FFN offload; the earlier smaller-model profiles use 204800, except GPT-OSS at 131072.
 
 | Tested model | Clean coding /3 | With 100k unrelated tokens /3 | Peak coding GPU use |
 |:--|:--:|:--:|--:|
-| **Gemma 4 12B · default** | **3** | **2** | **13.15 GiB** |
+| **Gemma 4 12B** | **3** | **2** | **13.15 GiB** |
 | Qwen3.5 9B | 2 | 0 | 14.11 GiB |
 | OmniCoder 9B | 2 | **2** | 14.06 GiB |
 | GPT-OSS 20B | **3** | 1 | 15.44 GiB |
 
-These are small exploratory samples. A full coding pass requires correct repairs, preserved checks and normal agent completion. Qwen3.8 27B IQ4_XS and Q3_K_XL loaded but failed the practical 131k prompt-ingestion gate; no coding-quality verdict follows from that failure.
+These are small exploratory samples. A full coding pass requires correct repairs, preserved checks and normal agent completion. The original Qwen3.8 27B IQ4_XS and Q3_K_XL configurations failed the practical 131k prompt-ingestion gate. Later q4 KV and explicit CPU placement made IQ4_XS usable at 96k; this does not retroactively turn the original failures into passes.
+
+The current Qwen profile keeps the same Q4 weights and reasoning enabled. Three-repeat generation medians were **23.92 TPS at 8k input, 21.17 at 50k, and 19.08 at 88k**. Exact five-value recall and a small native-Pi read/edit/test regression passed. These checks establish a practical configuration on this machine, not broad coding quality or reliable reasoning over every token. See the [performance checklist and measurements](docs/QWEN38-PERFORMANCE-TODO.md) for memory, latency and rejected settings.
 
 Read the [model comparison](docs/MODELS.md) for quantizations, speeds and failure details. The [evaluation guide](docs/TESTING.md) explains occupied context, recall and the recorded results behind the graph.
 

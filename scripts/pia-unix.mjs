@@ -6,7 +6,7 @@ import {root,piEntry,machine,generationLimits,serverArguments,ensureServer,acqui
 const args=process.argv.slice(2);
 const value=(key,fallback)=>{const at=args.indexOf(key);if(at<0)return fallback;const v=args[at+1];if(!v||v.startsWith('--'))throw Error(key+' requires a value');args.splice(at,2);return v;};
 const flag=key=>{const at=args.indexOf(key);if(at<0)return false;args.splice(at,1);return true;};
-const selected=value('--model','gemma'),context=value('--context',undefined),cwd=path.resolve(value('--cwd',process.cwd())),kv=value('--kv','f16'),dry=flag('--dry-run');
+const selected=value('--model','qwen38'),context=value('--context',undefined),cwd=path.resolve(value('--cwd',process.cwd())),kv=value('--kv','f16'),dry=flag('--dry-run');
 if(args.length||!['f16','q8_0'].includes(kv))throw Error('Usage: node scripts/pia-unix.mjs [--model NAME] [--context TOKENS] [--kv f16|q8_0] [--cwd PATH] [--dry-run]');
 const config=await machine(selected);
 if(context!==undefined){const n=Number(context);if(!Number.isInteger(n)||n<8192||n>config.NativeContext)throw Error('Context must fit the model native window');config.ContextSize=n;}

@@ -11,16 +11,19 @@ export const exec = promisify(execFile);
 export const nodeExe = path.join(root, 'runtime/node/node.exe');
 export const piEntry = path.join(root, 'node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js');
 export const localModels = {
-  qwen38: { file: 'unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-IQ4_XS.gguf', context: 262144 },
-  'qwen38-q3': { file: 'unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q3_K_XL.gguf', context: 262144 },
+  'qwen-flash': { file: 'ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-Coder-GGUF/IQ1_M/Qwen3.8-Flash-Next-GSQ-RCO-IQ1_M-00001-of-00002.gguf', context: 65536, runtime: 'strata' },
+  qwen38: { file: 'unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-IQ4_XS.gguf', context: 262144, defaultContext:98304, cpuTensorLayers:[58,59,63], threads:24, microbatch:64 },
   qwen: { file: 'unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-Q4_K_M.gguf', context: 262144 },
   gemma: { file: 'unsloth/gemma-4-12b-it-GGUF/gemma-4-12b-it-Q4_K_M.gguf', context: 262144 },
   omnicoder: { file: 'Tesslate/OmniCoder-9B-GGUF/omnicoder-9b-q4_k_m.gguf', context: 262144 },
   'gpt-oss': { file: 'ggml-org/gpt-oss-20b-GGUF/gpt-oss-20b-MXFP4.gguf', context: 131072 },
 };
-export async function machine(selection = 'gemma') {
+export function modelSelectionError(message = '--model must be a registered name or a GGUF file path') {
+  return new Error(`${message}\nConfigured models: ${Object.keys(localModels).join(', ')}\nYou can also pass a full path to a .gguf model file.`);
+}
+export async function machine(selection = 'qwen38') {
+  if (selection && !Object.hasOwn(localModels, selection) && !/\.gguf$/i.test(selection)) throw modelSelectionError(`Unknown --model value: ${selection}`);
   const config = JSON.parse((await readFile(path.join(root, 'machine.local.json'), 'utf8')).replace(/^\uFEFF/,''));
-  if (selection && !localModels[selection] && !/\.gguf$/i.test(selection)) throw new Error('--model must be a registered name or a GGUF file path');
   if (selection && !localModels[selection]) {
     config.ModelFile=path.resolve(selection);
     config.ModelId='custom-local';
@@ -30,12 +33,27 @@ export async function machine(selection = 'gemma') {
     config.ModelFile = path.join(config.ModelsDirectory, localModels[selection].file);
     config.ModelId = selection + '-local';
     config.NativeContext = localModels[selection].context;
-    config.ContextSize = Math.min(config.ContextSize, config.NativeContext);
+    config.ContextSize = Math.min(config.ContextSize, localModels[selection].defaultContext??config.NativeContext);
+    const tuning=localModels[selection];
+    if(tuning.cpuFfn!==undefined||tuning.cpuTensorLayers){
+      const offload=tuning.cpuTensorLayers
+        ? ['--override-tensor',`^blk\\.(${tuning.cpuTensorLayers.join('|')})\\.ffn_(gate|up|down)\\.weight$=CPU`]
+        : ['--n-cpu-ffn',String(tuning.cpuFfn)];
+      config.ExtraServerArgs=[...(config.ExtraServerArgs??[]),'--flash-attn','on','--cache-type-k','q4_0','--cache-type-v','q4_0','--batch-size','512','--ubatch-size',String(tuning.microbatch??128),...offload,'--temp','1.0','--top-p','0.95','--top-k','20','--min-p','0.0'];
+      if(tuning.threads)config.ExtraServerArgs.push('--threads',String(tuning.threads),'--threads-batch',String(tuning.batchThreads??tuning.threads));
+      if(config.Qwen38ChatTemplate)config.ExtraServerArgs.push('--chat-template-file',config.Qwen38ChatTemplate);
+    }
   }
   config.Reasoning ??= true;
+  if (localModels[selection]?.runtime === 'strata') {
+    Object.assign(config, {Runtime:'strata',ModelId:'flash-next-local',ContextSize:65536,NativeContext:65536,Port:48764,RouterUrl:'http://127.0.0.1:48764',MaxTokens:32768});
+  }
   config.ReasoningBudget ??= 2048;
   config.MaxTokens ??= 8192;
   return config;
+}
+export async function requireModelFiles(config){
+  try{await access(config.ModelFile);}catch{throw new Error(`Model file is not installed: ${config.ModelFile}\nChoose an installed model or download this model first.`);}
 }
 export function environment(extra = {}) {
   return { ...process.env, PI_OFFLINE: '1', PI_TELEMETRY: '0', PI_SKIP_VERSION_CHECK: '1',
@@ -66,10 +84,11 @@ export async function acquireInferenceLock() {
   return async () => { await handle.close(); await unlink(lockPath).catch(() => {}); };
 }
 export function generationLimits(config) {
-  const maxTokens = Math.min(config.MaxTokens || 8192, Math.floor(config.ContextSize / 4));
+  const maxTokens = Math.min(config.MaxTokens || 8192, Math.floor(config.ContextSize / (config.Runtime==='strata'?2:4)));
   return { maxTokens, reasoningBudget: config.Reasoning === false ? 0 : Math.min(config.ReasoningBudget ?? 2048, maxTokens - Math.min(2048, Math.floor(maxTokens / 2))) };
 }
 export function serverArguments(config) {
+  if(config.Runtime==='strata')return ['launch','--family','coder','--model','iq1_m','--model-path',config.ModelFile,'--data-dir',path.join(root,'.state/strata-data'),'--context','65536','--vision','off','--mtp','off','--parallel','1','--access','local','--port',String(config.Port),'--tune','skip','--yes','--no-tui','--output','json'];
   return ['--model', config.ModelFile, '--alias', config.ModelId, '--host', '127.0.0.1', '--port', String(config.Port),
     '--jinja', '--reasoning', config.Reasoning === false ? 'off' : 'on', '--reasoning-budget', String(generationLimits(config).reasoningBudget), '--fit', 'off', '--no-context-shift',
     '-ngl', String(config.GpuLayers), '-c', String(config.ContextSize), '--parallel', '1', '--log-verbosity','4', ...(config.ExtraServerArgs || [])];
@@ -86,6 +105,7 @@ async function probe(config) {
   return data;
 }
 export async function ensureServer(config) {
+  if(config.Runtime==='strata')return (await import('./strata-runtime.mjs')).ensureStrata(config);
   try { await probe(config); throw new Error('PORT_IN_USE_WITH_UNVERIFIABLE_REASONING_SETTINGS: a server is already running; stop that server before using local-ai so the requested thinking budget can be applied'); }
   catch (error) { if (error.message.startsWith('PORT_IN_USE')) throw error; }
   await access(config.ModelFile);
@@ -136,6 +156,7 @@ export async function prepareProfile(name, config, cwd = root, {agentDirectory} 
   const settings = { defaultTools: ['read', 'powershell', 'edit', 'write', 'grep', 'find', 'ls'], packages,
     extensions: [ ...(profiles[name].includes('windows-policy') ? [path.join(root, 'extensions/windows-destructive-policy.mjs')] : []), ...(profiles[name].includes('bash-policy') ? [path.join(root, 'extensions/bash-destructive-guard.ts')] : []) ],
     compaction: { enabled: true, reserveTokens: generationLimits(config).maxTokens, keepRecentTokens: Math.min(6000, Math.floor(config.ContextSize / 4)) }, branchSummary: { reserveTokens: generationLimits(config).maxTokens } };
+  if(config.Runtime==='strata'){settings.compaction.reserveTokens=8192;settings.branchSummary.reserveTokens=8192;}
   if(config.ModelId==='gpt-oss-local'){
     settings.extensions.push(path.join(root,'extensions/local-token-budget.mjs'));
     // The same first-turn character estimate can trigger premature compaction.
@@ -149,6 +170,8 @@ export async function prepareProfile(name, config, cwd = root, {agentDirectory} 
     settings.extensions.push(path.join(root, 'extensions/context-status.mjs'));
     settings.extensions.push(path.join(root, 'extensions/tool-budget.mjs'));
     settings.extensions.push(path.join(root,'extensions/effort.mjs'));
+    settings.extensions.push(path.join(root,'extensions/session-telemetry.mjs'));
+    settings.extensions.push(path.join(root,'extensions/search-timeout.mjs'));
     settings.skills = [path.join(root, '.state/.agents/skills')];
     settings.prompts = (await readdir(path.join(root,'prompts')).catch(error => { if (error.code === 'ENOENT') return []; throw error; })).filter(name=>name.endsWith('.md')&&name!=='effort.md').map(name=>path.join(root,'prompts',name));
   }
@@ -157,21 +180,30 @@ export async function prepareProfile(name, config, cwd = root, {agentDirectory} 
     // Pi App's inventory scans agentDir/extensions, not explicit settings paths.
     // Use the same real entry files for discovery and execution; never copy source.
     const visible=path.join(agentDir,'extensions');await mkdir(visible,{recursive:true});
-    const entries=[];
+    const entries=[],movedEntries=new Map();
+    const metadata=JSON.parse(await readFile(path.join(root,'config/desktop-extensions.json'),'utf8'));
     for(const source of settings.extensions){
-      const entry=path.join(visible,path.basename(source).replace(/\.(ts|js|mjs)$/,'.mjs'));
-      await writeFile(entry,'export {default} from '+JSON.stringify(pathToFileURL(source).href)+';\n');
+      const id=path.basename(source).replace(/\.(ts|js|mjs)$/,'');
+      const directory=path.join(visible,id);await mkdir(directory,{recursive:true});
+      const entry=path.join(directory,'index.js');
+      const content='export {default} from '+JSON.stringify(pathToFileURL(source).href)+';\n';
+      await writeFile(entry,content);
+      await writeFile(path.join(directory,'package.json'),JSON.stringify({name:metadata[id]?.name??id,description:metadata[id]?.description??'Local AI extension',version:'1.0.0',private:true,type:'module',pi:{extensions:['./index.js']}},null,2)+'\n');
+      const oldEntry=path.join(visible,id+'.mjs');movedEntries.set(oldEntry,entry);
+      // Remove only our exact generated wrapper; preserve user-authored files.
+      const oldContent=await readFile(oldEntry,'utf8').catch(error=>{if(error.code==='ENOENT')return null;throw error;});
+      if(oldContent===content)await unlink(oldEntry);
       entries.push(entry);
     }
     const previous=JSON.parse(await readFile(path.join(agentDir,'settings.json'),'utf8').catch(error=>{if(error.code==='ENOENT')return '{}';throw error;}));
-    const toggles=(previous.extensions??[]).filter(value=>typeof value==='string'&&/^[+-]/.test(value)&&entries.includes(path.resolve(agentDir,value.slice(1))));
+    const toggles=(previous.extensions??[]).filter(value=>typeof value==='string'&&/^[+-]/.test(value)).map(value=>value[0]+(movedEntries.get(path.resolve(agentDir,value.slice(1)))??path.resolve(agentDir,value.slice(1)))).filter(value=>entries.includes(value.slice(1)));
     settings.extensions=[...entries.filter(entry=>!toggles.some(value=>path.resolve(agentDir,value.slice(1))===entry)),...toggles];
   }
   await writeFile(path.join(agentDir, 'settings.json'), JSON.stringify(settings, null, 2));
   await writeFile(path.join(agentDir, 'models.json'), JSON.stringify({ providers: { 'local-llama': {
     baseUrl: config.RouterUrl + '/v1', api: 'openai-completions', apiKey: 'local-only', models: [{
       id: config.ModelId, name: `Local ${config.ModelId} (16 GB baseline)`, reasoning: config.Reasoning !== false, input: ['text'], contextWindow: config.ContextSize, maxTokens: generationLimits(config).maxTokens,
-      thinkingLevelMap:{off:config.ModelId==='gpt-oss-local'?null:'off',minimal:null,low:'low',medium:'medium',high:'high',xhigh:null,max:null},
+      thinkingLevelMap:config.Runtime==='strata'?{off:'none',minimal:null,low:'low',medium:'medium',high:'xhigh',xhigh:'xhigh',max:null}:{off:config.ModelId==='gpt-oss-local'?null:'off',minimal:null,low:'low',medium:'medium',high:'high',xhigh:null,max:null},
       cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } }]
   } } }, null, 2));
   if (profiles[name].some(value => ['pi-lsp-extension','lsp-windows'].includes(value))) await prepareLsp(cwd);

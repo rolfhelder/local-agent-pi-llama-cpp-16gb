@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {readFile,unlink} from 'node:fs/promises';
-import { root, nodeExe, piEntry, machine, environment, acquireInferenceLock, ensureServer, serverArguments, prepareProfile, exec } from './local-runtime.mjs';
+import { root, nodeExe, piEntry, machine, requireModelFiles, modelSelectionError, environment, acquireInferenceLock, ensureServer, serverArguments, prepareProfile, exec } from './local-runtime.mjs';
 const args = process.argv.slice(2);
 if(['presets','receipts','eval','progress','config'].includes(args[0])||args.some(a=>a==='--preset'||a.startsWith('--preset='))){
  console.error('This development command was retired. Use --context TOKENS for launch settings; tests save report.json automatically. Development evals: pnpm eval:coding-check.');process.exit(1);
@@ -15,12 +15,12 @@ if(args[0]==='install'){
 }
 if(args[0]==='doctor'){await (await import('./doctor.mjs')).main(args.slice(1));process.exit(process.exitCode??0);}
 if(args[0]==='test'){await (await import('./acceptance.mjs')).main(args.slice(1));process.exit(process.exitCode??0);}
-const value = (flag, fallback) => { const index = args.indexOf(flag); if (index < 0) return fallback; const result = args[index + 1]; args.splice(index, 2); if (!result) throw new Error(`${flag} requires a value`); return result; };
+const value = (flag, fallback) => { const index = args.indexOf(flag); if (index < 0) return fallback; const result = args[index + 1]; args.splice(index, 2); if (!result || result.startsWith('--')) { const error = ['--model','--local-model'].includes(flag) ? modelSelectionError(`${flag} requires a value`) : new Error(`${flag} requires a value`); console.error(error.message); process.exit(1); } return result; };
 const flag = name => { const index = args.indexOf(name); if (index < 0) return false; args.splice(index, 1); return true; };
 if (flag('--help')) {
   console.log('local-ai install             Open installation and acceptance menu\nlocal-ai install --plan      Preview core installation\nlocal-ai install --check     Inspect installed core components\nlocal-ai install --run       Install the pinned core stack\nlocal-ai install --test --run  Run acceptance directly\n');
   console.log('local-ai doctor              Hardware and model health\nlocal-ai test                Preview first-run acceptance\nlocal-ai test --run          Run acceptance (select installed model; --model NAME or GGUF path)\n');
-  console.log('local-ai [--model qwen|gemma|omnicoder|gpt-oss] [--context TOKENS] [--kv f16|q8_0] [--profile standard|native|guard|lsp|lsp-windows|research|desktop|web]\n    [--reasoning-budget TOKENS] [--no-reasoning] [--browser] [--cwd PATH] [--dry-run] [--probe] [Pi arguments]\nDefaults: Gemma, 204800 context (GPT-OSS capped at 131072), reasoning on, 2048 thinking tokens, loopback port 48763.\n--local-model remains a compatibility alias for --model.\n--dry-run prints both full process commands without starting the model.');
+  console.log('local-ai [--model qwen38|qwen-flash|qwen|gemma|omnicoder|gpt-oss] [--context TOKENS] [--kv f16|q8_0] [--profile standard|native|guard|lsp|lsp-windows|research|desktop|web]\n    [--reasoning-budget TOKENS] [--no-reasoning] [--browser] [--cwd PATH] [--dry-run] [--probe] [Pi arguments]\nDefaults: Qwen3.8 27B, 98304 context with three selected CPU FFN groups, reasoning on, 2048 thinking tokens, loopback port 48763.\n--local-model remains a compatibility alias for --model.\n--dry-run prints both full process commands without starting the model.');
   process.exit(0);
 }
 const profile = value('--profile', 'standard');
@@ -60,9 +60,12 @@ try {
     if (!/^\d+$/.test(context) || Number(context) < 8192 || Number(context) > 1048576) throw new Error('--context must be between 8192 and 1048576; sizes above the model native window are experimental');
     config.ContextSize = config.ModelId==='gpt-oss-local'?Math.min(Number(context),config.NativeContext):Number(context);
   }
+  if(config.Runtime==='strata') (await import('./strata-runtime.mjs')).validateStrataContext(config);
   if (dryRun) {
-    console.log(JSON.stringify({ profile, cwd, executable: nodeExe, pi: piEntry, piArguments: piArgs, model: `local-llama/${config.ModelId}`, server: config.LlamaExecutable, arguments: serverArguments(config), browser, singleSession: true }, null, 2));
+    const strata=config.Runtime==='strata'?(await import('./strata-runtime.mjs')).strataPaths(config):null;
+    console.log(JSON.stringify({ profile, cwd, executable: nodeExe, pi: piEntry, piArguments: piArgs, model: `local-llama/${config.ModelId}`, server: strata?.python??config.LlamaExecutable, arguments: [...(strata?[strata.entry]:[]),...serverArguments(config)], browser, singleSession: true }, null, 2));
   } else {
+    await requireModelFiles(config);
     release ??= await acquireInferenceLock();
     const prepared = await prepareProfile(profile, config, cwd);
     const restartPath=path.join(root,'.state','pia-restart-'+randomUUID()+'.json');

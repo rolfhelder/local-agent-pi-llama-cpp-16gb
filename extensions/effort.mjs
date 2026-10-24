@@ -9,9 +9,9 @@ const names=Object.fromEntries(Object.entries(capabilities).map(([key,value])=>[
 export default function(pi){
  let customBudget=process.env.PI_LOCAL_THINKING_BUDGET===undefined?undefined:Number(process.env.PI_LOCAL_THINKING_BUDGET);
  let previous='medium',initialized=false;
- const describe=(model,level)=>`${names[model]||model}: ${level}; ${model==='gpt-oss'?'native effort + ':'local '}thinking budget ${customBudget??budgets[level]} tokens; total response cap ${process.env.PI_LOCAL_OUTPUT_CAP||8192}.`;
+ const describe=(model,level)=>model==='qwen-flash'?`${names[model]}: native ${level==='high'?'xhigh':level}; total response cap ${process.env.PI_LOCAL_OUTPUT_CAP||32768} tokens, shortened by Strata to available context.`:`${names[model]||model}: ${level}; ${model==='gpt-oss'?'native effort + ':'local '}thinking budget ${customBudget??budgets[level]} tokens; total response cap ${process.env.PI_LOCAL_OUTPUT_CAP||8192}.`;
  const notify=(ctx,text)=>ctx.ui.notify(text,'info');
- const showStatus=ctx=>{if(ctx.mode==='tui')ctx.ui.setStatus('01-effort',`Effort: ${canonical(pi.getThinkingLevel())} [${modelKey(ctx.model?.id)==='gpt-oss'?'native + budget':'budget preset'}]`);};
+ const showStatus=ctx=>{if(ctx.mode==='tui')ctx.ui.setStatus('01-effort',`Effort: ${canonical(pi.getThinkingLevel())} [${modelKey(ctx.model?.id)==='qwen-flash'?'native':modelKey(ctx.model?.id)==='gpt-oss'?'native + budget':'budget preset'}]`);};
  const set=async(level,ctx,persist=false)=>{
   const model=modelKey(ctx.model?.id);level=canonical(level.trim().toLowerCase());
   if(!names[model]||!levels(model).includes(level)){notify(ctx,`Supported: ${levels(model).join(', ')}. ${model==='gpt-oss'?'GPT-OSS has native low/medium/high; reasoning off is unsupported.':'These are local token-budget presets, not native model effort levels.'}`);return;}

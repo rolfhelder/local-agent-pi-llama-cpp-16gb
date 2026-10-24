@@ -34,7 +34,7 @@ The shared coding manifest includes multiple files. To select only one, copy its
 # Add -Unlimited only when an uncapped download is wanted.
 ```
 
-Qwen3.8 27B recipes remain available in the model-results guide, but the tested quantizations failed our minimum practical throughput gate. Treat further offload experiments separately from core installation. Review upstream model licenses/terms for your use.
+Qwen3.8 27B UD-IQ4_XS is the current default with a measured 96k CPU-offload profile. Its original large-context configurations failed the throughput gate; use the current model registry settings rather than restoring those old flags. See the model-results guide and performance checklist for evidence and hardware limits. Review upstream model licenses/terms for your use.
 
 ## Setup menu
 

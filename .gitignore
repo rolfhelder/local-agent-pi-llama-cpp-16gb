@@ -40,8 +40,10 @@ Thumbs.db
 docs/*
 !docs/TESTING.md
 !docs/MODELS.md
+!docs/QWEN38-PERFORMANCE-TODO.md
 evaluation/*
 !evaluation/fixtures/
+!evaluation/QWEN38-PERFORMANCE-2026-10-24.json
 manifests/architecture.sources.json
 manifests/extensions.candidates.json
 manifests/eval-stack.json
