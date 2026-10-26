@@ -38,7 +38,7 @@ For a model already found through the registered layout or a previously saved pa
 local-ai optimize qwen38
 ```
 
-The command shows a loading bar and checksum progress in GB. It verifies size and SHA256 **before modifying configuration**, saves an exact backup under ignored `.state/config-backups/`, and records the Qwen-specific file and context in ignored `machine.local.json`. Other model path/context mappings and the working folder are preserved. No model is downloaded or loaded, and no driver/pagefile/Windows policy is changed. Invalid or missing weights leave the configuration unchanged.
+The command shows a loading bar and checksum progress in GB. It verifies size and SHA256 **before modifying configuration**, saves an exact backup under ignored `.state/config-backups/`, and records the Qwen-specific file and context in ignored `machine.local.json`. Existing unrelated local configuration and the working folder are preserved. No model is downloaded or loaded, and no driver/pagefile/Windows policy is changed. Invalid or missing weights leave the configuration unchanged.
 
 This command **applies the measured recipe**; it does not run an automatic tuning sweep or promise 19 TPS on another computer. Use `--json` for structured output or `--no-color --ascii` for a plain terminal.
 
@@ -109,7 +109,7 @@ The optimizer records mappings like these, using **your** paths:
 }
 ```
 
-Merge these fields into the existing `machine.local.json`; do not replace runtime paths or the working folder. Registered Qwen selections use this file override while other models retain their own paths and contexts. A bare GGUF path passed to `--model` uses the conservative custom-model path instead: use the **`qwen38` alias** to receive Qwen-specific tuning.
+Merge these fields into the existing `machine.local.json`; do not replace runtime paths or the working folder. The **`qwen38` alias** receives this Qwen-specific tuning. A bare GGUF path passed to `--model` instead uses the conservative custom-model path and is not this supported profile.
 
 If the optimizer fails verification, obtain the exact pinned file rather than changing the expected hash. To undo a saved configuration, close model sessions and restore the reported backup to `machine.local.json`; this does not remove the model or any sessions. Machine configuration and backups remain ignored by Git.
 

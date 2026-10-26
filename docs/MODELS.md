@@ -1,6 +1,6 @@
-# Qwen3.8 27B and historical alternatives
+# Qwen3.8 27B and historical measurements
 
-The main setup is **Qwen3.8 27B UD-IQ4_XS at 96k context** on Windows, RTX 4090 Laptop (16,376 MiB VRAM), 32 GB RAM, Pi1.3.0 and llama.cpp b11669. Results were recorded October21–24,2026. Start with the [Qwen setup and optimization guide](QWEN38.md); the older four-model experiments below are alternatives, not the default installation path.
+The only supported setup is **Qwen3.8 27B UD-IQ4_XS at 96k context** on Windows, RTX 4090 Laptop (16,376 MiB VRAM), 32 GB RAM, Pi 1.3.0 and llama.cpp b11669. Results were recorded October 21–24, 2026. Start with the [Qwen setup and optimization guide](QWEN38.md). The other model records below are retained as data, not as alternative setup paths.
 
 ## Qwen3.8 27B: CPU placement changes the practical result
 
@@ -18,9 +18,23 @@ Tested [Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B) through pinned [Un
 
 Peak total GPU usage was approximately 15.5 GiB. These were **throughput failures**, not demonstrated allocation failures or coding-quality failures. Recall and downstream coding/research/effort quality were unassessed because the required context gate failed. Windows shared-GPU-memory spill was suspected but not confirmed. Both verified weights and scratch files were deleted; the overnight scheduler was removed.
 
-Keep [IQ4_XS](../manifests/qwen38-download.json) and [Q3_K_XL](../manifests/qwen38-next-candidate.json) recipes for the other PC. More available VRAM may help but is not a proven remedy. Verify its actual GPU/memory, re-download one pinned quantization, test 131072 with bounded ingestion first, and only increase toward 204800 after a practical pass. A smaller context could be viable; no blanket rejection of the model family is justified.
+The [IQ4_XS](../manifests/qwen38-download.json) and [Q3_K_XL](../manifests/qwen38-next-candidate.json) manifests remain as provenance for these measurements, not download recommendations. More available VRAM may change the result, but has not been tested here.
 
-## Historical four-model comparison
+## Historical context and TPS data
+
+The selected Qwen measurement and the earlier model evaluations used different tasks and occupied inputs. They are shown together to preserve the observed context and TPS data, **not** as a normalized quality or speed ranking.
+
+| Model / quantization | Recorded operating or test context | Generation TPS evidence | Status |
+|---|---:|---:|---|
+| **Qwen3.8 27B UD-IQ4_XS** | **98,304 slot; 88,146-token input** | **19.01 with Pi App open** | **Supported profile** |
+| Qwen3.5 9B Q4_K_M | 204,800 coding slot | 49.1 mean in coding runs | Historical data only |
+| Gemma 4 12B IT Q4_K_M | 204,800 coding slot | 44.6 mean in coding runs | Historical data only |
+| OmniCoder 9B Q4_K_M | 204,800 coding slot | 49.0 mean in coding runs | Historical data only |
+| GPT-OSS 20B MXFP4 | 131,072 coding slot | 71.5 mean in coding runs | Historical data only |
+
+Qwen's 19.01 TPS is a three-run long-context generation median with reasoning enabled; the four historical TPS figures are mean generated-token rates from coding-agent runs and exclude prefill/tool time. Keep the context and workload labels attached to each value.
+
+### Historical four-model coding data
 
 Each model repaired three projects clean and with 100000 unrelated background tokens. A full pass requires preserved public checks, all hidden checks and normal agent completion within six minutes. Reasoning was on (2048 thinking tokens / 8192 total output), f16 KV, one slot.
 
@@ -59,14 +73,6 @@ One clean first attempt plus one diagnostic follow-up; 13 behavioral checks. No 
 
 Qwen recovered best after steering, but **none implemented the complete feature correctly**. Gemma and Qwen recovered basic session controls while still missing provider-budget/picker details. GPT-OSS's command errored on an undefined `select`; OmniCoder did not produce a loadable implementation. Production `/effort` was restored afterward. This single SDK-extension task does not supersede the broader coding results.
 
-## Experimental Flash-Next (separate runtime)
-
-
-
-On the configured Windows machine, use `local-ai --model qwen-flash` for Pi CLI or `local-ai-app --model qwen-flash` for Pi App. This selector uses the existing Strata installation and both ISTA-DASLab Coder IQ1_M shards, with **65,536 tokens**, one slot, vision off and MTP drafting off. The default selector is Qwen3.8 27B (`qwen38`). Preview with `--dry-run`; the launcher checks Strata's plan and refuses missing engine/model downloads. New PCs need Strata and the weights installed separately; `StrataDirectory` and `StrataInstallDirectory` in `machine.local.json` can override their locations.
-
-Effort uses native low/medium/xhigh (Pi high maps to xhigh), with a 32,768-token output ceiling shortened by Strata to remaining context. This configuration is experimental: successful loading does not establish reliable coding or long-context quality. Earlier localization trials did not produce a verified fix within their response budgets.
-
 ## Optional module evidence
 
 - Windows LSP diagnostics/navigation/freshness, hooks, guard behavior, context display, browser fixture and worktree isolation have scripted conformance checks.
@@ -75,4 +81,4 @@ Effort uses native low/medium/xhigh (Pi high maps to xhigh), with a 32,768-token
 - Computer-use is installed as an optional profile; native Windows GUI tasks and image grounding have not passed a completed eval suite here.
 - Pi App is optional. Its resident-memory display measures Electron system RAM, not llama.cpp memory or model VRAM. The CLI/API path remains the baseline.
 
-[Machine-readable summary](../results/models.json). Raw session research stays local and ignored. Gemma is a practical starting choice from this sample; repeat on the destination machine rather than treating these numbers as guarantees.
+[Machine-readable summary](../results/models.json). Raw session research stays local and ignored. The historical results are evidence records; Qwen3.8 IQ4_XS at the documented 96k profile is the sole operational recommendation.

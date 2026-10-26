@@ -18,7 +18,7 @@ A new installation writes machine.local.json using paths inside this checkout. I
 
 ## 2.1 Download Qwen3.8 27B separately
 
-The main setup uses **Qwen3.8 27B UD-IQ4_XS** with the measured 96k CPU/GPU profile. Download only this file to follow the main guide. Other models remain optional historical alternatives; no four-model download is required.
+The supported setup uses **Qwen3.8 27B UD-IQ4_XS** with the measured 96k CPU/GPU profile. Download only this file. Other model names and manifests are retained as historical experiment data, not alternative installation paths.
 
 | Model | Upstream GGUF repository | Pinned download manifest |
 |---|---|---|
@@ -33,11 +33,11 @@ Use the dedicated Qwen manifest for a single, pinned download:
 
 After the file verifies, run `local-ai optimize qwen38`, or add `--model-file PATH` if you downloaded it elsewhere. The [Qwen setup guide](QWEN38.md) explains checksum verification, backups and the exact settings behind approximately 19 TPS. Review upstream model licenses/terms for your use.
 
-The older shared coding manifest includes multiple files. For an alternative model, copy only its entry into ignored `manifests/machine-models.json` and pass that filename to the downloader. Its fields are Repo, Revision, File, Size and SHA256. Earlier model comparisons remain in [historical results](MODELS.md).
+The older shared coding manifest includes multiple files only to preserve provenance for historical measurements. Do not use it for this setup. Context and TPS figures for those prior runs remain in [historical results](MODELS.md).
 
 ## Setup menu
 
-Run `local-ai install` and choose installation, inventory, real acceptance, or model checksum/health. Nothing installs or loads merely by opening the menu. Choose `0` to exit. Acceptance and doctor list installed GGUF models, automatically selecting only when exactly one is found. With several models, choose a number or enter a full GGUF path. `--model omnicoder` skips selection. Projector files and split shards are excluded from automatic discovery; a split model can be selected explicitly by its first shard path. Direct alternatives remain available: `local-ai install --plan`, `--check`, `--run`, `--test` (acceptance preview), and `--test --run` (real acceptance). `local-ai test --run` remains a shortcut.
+Run `local-ai install` and choose installation, inventory, real acceptance, or model checksum/health. Nothing installs or loads merely by opening the menu. Choose `0` to exit. Keep only the Qwen IQ4_XS weight in the configured model folder; acceptance and doctor then select it automatically. Projector files and split shards are excluded from discovery. Direct commands remain available: `local-ai install --plan`, `--check`, `--run`, `--test` (acceptance preview), and `--test --run` (real acceptance). `local-ai test --run` remains a shortcut.
 
 ## Choose Pi's working folder
 
@@ -86,7 +86,6 @@ local-ai install --check
 local-ai doctor --verify-model
 local-ai test                        # preview
 local-ai test --run                  # choose an installed model, then test
-local-ai test --model omnicoder --run # choose another installed model
 local-ai
 ```
 

@@ -116,11 +116,9 @@ The optional desktop connects to the same Qwen profile, with an effort picker an
 
 Follow the [Pi App setup guide](docs/PI-APP.md) for installation, local connection, extension visibility and thinking settings.
 
-## Other models and platforms
+## Historical data and platforms
 
-Gemma 4 12B, Qwen3.5 9B, OmniCoder 9B and GPT-OSS 20B remain selectable alternatives. Their earlier experiments are historical comparisons, not this repository's main setup path. Flash-Next remains a separate experimental Strata selector.
-
-See [alternative models and historical measurements](docs/MODELS.md) if Qwen is not suitable for your hardware.
+This repository supports one operational model profile: **Qwen3.8 27B UD-IQ4_XS at 98,304 tokens, measured at 19.01 TPS with Pi App open**. Gemma, Qwen3.5, OmniCoder, GPT-OSS and Flash-Next figures are retained only as historical experiment data; they are not download, setup, or runtime recommendations. See the [context and TPS comparison](docs/MODELS.md#historical-context-and-tps-data).
 
 llama.cpp also supports macOS/Metal and Linux/CUDA. Our **Windows 16 GB profile is not validated on those platforms**; CPU placement and memory assumptions must be rechecked. The [installation guide's platform section](docs/INSTALL.md#macos-and-linux) provides the native baseline and shell alias.
 
