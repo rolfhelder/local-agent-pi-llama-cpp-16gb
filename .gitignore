@@ -41,6 +41,7 @@ docs/*
 !docs/TESTING.md
 !docs/MODELS.md
 !docs/QWEN38-PERFORMANCE-TODO.md
+!docs/QWEN38.md
 evaluation/*
 !evaluation/fixtures/
 !evaluation/QWEN38-PERFORMANCE-2026-10-24.json

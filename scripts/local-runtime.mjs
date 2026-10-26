@@ -21,19 +21,19 @@ export const localModels = {
 export function modelSelectionError(message = '--model must be a registered name or a GGUF file path') {
   return new Error(`${message}\nConfigured models: ${Object.keys(localModels).join(', ')}\nYou can also pass a full path to a .gguf model file.`);
 }
-export async function machine(selection = 'qwen38') {
+export async function machine(selection = 'qwen38', {configFile=path.join(root,'machine.local.json')}={}) {
   if (selection && !Object.hasOwn(localModels, selection) && !/\.gguf$/i.test(selection)) throw modelSelectionError(`Unknown --model value: ${selection}`);
-  const config = JSON.parse((await readFile(path.join(root, 'machine.local.json'), 'utf8')).replace(/^\uFEFF/,''));
+  const config = JSON.parse((await readFile(configFile, 'utf8')).replace(/^\uFEFF/,''));
   if (selection && !localModels[selection]) {
     config.ModelFile=path.resolve(selection);
     config.ModelId='custom-local';
     config.NativeContext=32768;
     config.ContextSize=Math.min(config.ContextSize,32768);
   } else if (selection) {
-    config.ModelFile = path.join(config.ModelsDirectory, localModels[selection].file);
+    config.ModelFile = config.ModelFiles?.[selection]??path.join(config.ModelsDirectory, localModels[selection].file);
     config.ModelId = selection + '-local';
     config.NativeContext = localModels[selection].context;
-    config.ContextSize = Math.min(config.ContextSize, localModels[selection].defaultContext??config.NativeContext);
+    config.ContextSize = Math.min(config.ModelContextSizes?.[selection]??config.ContextSize, localModels[selection].defaultContext??config.NativeContext);
     const tuning=localModels[selection];
     if(tuning.cpuFfn!==undefined||tuning.cpuTensorLayers){
       const offload=tuning.cpuTensorLayers
@@ -203,7 +203,7 @@ export async function prepareProfile(name, config, cwd = root, {agentDirectory} 
   await writeFile(path.join(agentDir, 'models.json'), JSON.stringify({ providers: { 'local-llama': {
     baseUrl: config.RouterUrl + '/v1', api: 'openai-completions', apiKey: 'local-only', models: [{
       id: config.ModelId, name: `Local ${config.ModelId} (16 GB baseline)`, reasoning: config.Reasoning !== false, input: ['text'], contextWindow: config.ContextSize, maxTokens: generationLimits(config).maxTokens,
-      thinkingLevelMap:config.Runtime==='strata'?{off:'none',minimal:null,low:'low',medium:'medium',high:'xhigh',xhigh:'xhigh',max:null}:{off:config.ModelId==='gpt-oss-local'?null:'off',minimal:null,low:'low',medium:'medium',high:'high',xhigh:null,max:null},
+      thinkingLevelMap:config.Runtime==='strata'||config.ModelId==='qwen38-local'?{off:'none',minimal:null,low:'low',medium:'medium',high:'xhigh',xhigh:'xhigh',max:null}:{off:config.ModelId==='gpt-oss-local'?null:'off',minimal:null,low:'low',medium:'medium',high:'high',xhigh:null,max:null},
       cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } }]
   } } }, null, 2));
   if (profiles[name].some(value => ['pi-lsp-extension','lsp-windows'].includes(value))) await prepareLsp(cwd);

@@ -74,7 +74,7 @@ await writeFile(path.join(root,'.state/pi-app-launch.json'),JSON.stringify({mode
 done('Model, effort settings and desktop SDK configured');
 ui.row('Model',config.ModelId);
 ui.row('Context',config.ContextSize.toLocaleString('en-US')+' tokens');
-ui.row('Reasoning',config.Reasoning===false?'off':thinking+(config.Runtime==='strata'?' (native effort)':' (request budget presets)'));
+ui.row('Reasoning',config.Reasoning===false?'off':thinking+(config.Runtime==='strata'?' (native effort)':config.ModelId==='qwen38-local'?' (native effort + budget; high maps to xhigh)':' (request budget presets)'));
 ui.row('Response cap',config.MaxTokens.toLocaleString('en-US')+' tokens');
 ui.row('Pi settings',prepared.agentDir);
 ui.row('Workspace',cwd);

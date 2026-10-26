@@ -15,6 +15,7 @@ if(args[0]==='install'){
 }
 if(args[0]==='doctor'){await (await import('./doctor.mjs')).main(args.slice(1));process.exit(process.exitCode??0);}
 if(args[0]==='test'){await (await import('./acceptance.mjs')).main(args.slice(1));process.exit(process.exitCode??0);}
+if(args[0]==='optimize'){await (await import('./optimize.mjs')).main(args.slice(1));process.exit(process.exitCode??0);}
 const value = (flag, fallback) => { const index = args.indexOf(flag); if (index < 0) return fallback; const result = args[index + 1]; args.splice(index, 2); if (!result || result.startsWith('--')) { const error = ['--model','--local-model'].includes(flag) ? modelSelectionError(`${flag} requires a value`) : new Error(`${flag} requires a value`); console.error(error.message); process.exit(1); } return result; };
 const flag = name => { const index = args.indexOf(name); if (index < 0) return false; args.splice(index, 1); return true; };
 if (flag('--help')) {

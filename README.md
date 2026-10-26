@@ -1,47 +1,31 @@
-![Local Agent: Pi harness and llama.cpp on a 16 GB GPU](assets/readme-hero.svg)
+![Qwen3.8 27B with Pi and llama.cpp on a 16 GB GPU](assets/readme-hero.svg)
 
 # local-agent-pi-llama-cpp-16gb
 
-**A fully local AI coding-agent setup with the Pi harness + llama.cpp.** Developed on Windows with an **RTX 4090 Laptop GPU, 16 GB VRAM and 32 GiB RAM**. Optional Pi App, one-command startup, and reproducible coding/context evals.
+**Qwen3.8 27B, Pi harness and llama.cpp on one 16 GB GPU.** A Windows setup checklist, one-command launchers and a measured CPU/GPU configuration that reached **19 TPS with a 96k context window**. Pi App is an optional desktop interface.
 
-> **Validation status:** tested on the development Windows machine. A clean Windows installation and native macOS/Linux acceptance are still pending; model scores are exploratory samples.
-
-## One command, one local model
-
-After setup, open a terminal in your project:
-
-```powershell
-local-ai
-local-ai --model omnicoder
-local-ai --context 32768 --dry-run
-```
-
-The launcher prepares Pi, starts llama.cpp on loopback, and stops its owned server when Pi exits. One model and one inference session run at a time. Core inference needs no cloud account; optional web tools still contact the internet.
-
-| Harness | Inference runtime | Default model | Optional interface |
+| Model | Context slot | Long-input generation | Tested hardware |
 |:--|:--|:--|:--|
-| Pi CLI 1.3.0 | llama.cpp b11669 / CUDA | Qwen3.8 27B UD-IQ4_XS | Pi App 0.7.6 |
+| **Qwen3.8 27B · UD-IQ4_XS** | **98,304 tokens** | **19.01 TPS** with Pi App open | RTX 4090 Laptop · 16 GB VRAM · 32 GB RAM |
 
-## Built around a real 16 GB budget
+> Measured on the development Windows machine, with reasoning enabled. This is a tested profile, not an automatic speed guarantee or a claim of dependable coding over every token. Clean-machine installation and native macOS/Linux inference remain unverified.
 
-| GPU tested | Dedicated VRAM | System memory | Operating system |
-|:--|:--|:--|:--|
-| RTX 4090 **Laptop** GPU | 16,376 MiB | 32 GiB | Native Windows |
+## Start here: the exact Qwen model
 
-**Weights + KV/context cache + compute buffers + desktop usage must fit together.** The GGUF file size alone is not the memory requirement. Desktop GPUs with similar names can have different memory, and Apple unified memory is shared with the OS.
+Use **`Qwen3.8-27B-UD-IQ4_XS.gguf`**, a 14.25 GB Q4 file. The measurements do not apply to Q3, other Q4 variants, or Flash-Next.
 
-Windows is the tested path. macOS/Linux have a documented baseline, with native acceptance still pending. Keep model results tied to the hardware and settings that produced them.
+Get the [pinned IQ4_XS model from Unsloth on Hugging Face](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/blob/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-IQ4_XS.gguf). The optimizer verifies its SHA256 before saving configuration. Weights remain separate from this repository.
 
-## Get a working local agent
+## From fresh clone to local agent
 
-| Done | Step | What success looks like |
+| Done | Step | Result |
 |:--:|:--|:--|
-| ☐ | Install PowerShell 7, Git and an NVIDIA driver | The shell, Git and GPU tools work |
-| ☐ | Clone this repository | A local checkout with no private machine paths copied in |
-| ☐ | Run the core installer from the setup menu | Pinned Node, pnpm, Pi, search tools and llama.cpp are present |
-| ☐ | Choose and download one model | Its pinned size and SHA-256 match |
-| ☐ | Run first-start acceptance | A real answer and a verified Pi read/edit/test loop |
-| ☐ | Launch `local-ai` | Your selected local model is ready |
+| ☐ | Install PowerShell 7, Git and the NVIDIA driver | Windows prerequisites ready |
+| ☐ | Clone the repository and run the core installer | Pinned Node, pnpm, Pi, search tools and llama.cpp |
+| ☐ | Download the pinned Qwen IQ4_XS file | One model, verified quantization |
+| ☐ | Apply the Qwen profile | Saved path, 96k context and measured offload settings |
+| ☐ | Run acceptance | Real answer and a verified Pi read/edit/test loop |
+| ☐ | Start `local-ai` | Pi and llama.cpp start together |
 
 ```powershell
 git clone https://github.com/rolfhelder/local-agent-pi-llama-cpp-16gb.git
@@ -49,122 +33,103 @@ cd local-agent-pi-llama-cpp-16gb
 .\bin\local-ai.cmd install
 ```
 
-Model weights are a separate choice and can stay in any folder. Use the setup menu to browse for a model folder or GGUF file; it remembers the location in local configuration. Optional desktop/browser/helper assets are separate too. The installer has preview/current-machine checks; **clean-Windows installation acceptance remains pending**.
+The installer provides the core runtime; **it does not download model weights**. It also lets you choose a working folder. Settings and sessions stay under that folder's ignored `.pi/local-ai/`; runtimes and models stay separate.
 
-The wizard also lets you choose Pi's **working folder**. Pi settings, sessions and saved effort preferences stay under that folder's `.pi/local-ai/`; model weights remain in their separate location.
+Follow the [core installation guide](docs/INSTALL.md) for prerequisites, model folders and first-run acceptance.
 
-Follow the [installation checklist and model-selection guide](docs/INSTALL.md) for download recipes, machine configuration, first-run checks and recovery boundaries.
+## Apply the 19 TPS profile
 
-## See the measured tradeoffs
+After downloading the model, apply the configuration using its actual location:
 
-![Completed context capacity and sampled coding-run GPU memory](assets/model-comparison.png)
+```powershell
+local-ai optimize qwen38 --model-file "D:/AI/models/Qwen3.8-27B-UD-IQ4_XS.gguf"
+local-ai test --model qwen38 --run
+local-ai
+```
 
-Context bars show **completed inference capacity**, not dependable recall or coding quality. GPU-memory bars include the desktop and come from different configured windows. These bars show the earlier four-model batch. The current Qwen3.8 27B default is **98,304 tokens**, with selected CPU FFN offload; the earlier smaller-model profiles use 204800, except GPT-OSS at 131072.
+If Qwen is already in the registered model folder, use simply **`local-ai optimize qwen38`**. It shows checksum progress, backs up local configuration and saves the model path and 98,304-token window. Both launchers use the same offload recipe. It starts no model, downloads nothing and does not benchmark or guess your hardware's optimum.
 
-| Tested model | Clean coding /3 | With 100k unrelated tokens /3 | Peak coding GPU use |
-|:--|:--:|:--:|--:|
-| **Gemma 4 12B** | **3** | **2** | **13.15 GiB** |
-| Qwen3.5 9B | 2 | 0 | 14.11 GiB |
-| OmniCoder 9B | 2 | **2** | 14.06 GiB |
-| GPT-OSS 20B | **3** | 1 | 15.44 GiB |
+The [Qwen setup and optimization guide](docs/QWEN38.md) explains every setting, manual configuration, recovery and why the model size alone does not predict VRAM use.
 
-These are small exploratory samples. A full coding pass requires correct repairs, preserved checks and normal agent completion. The original Qwen3.8 27B IQ4_XS and Q3_K_XL configurations failed the practical 131k prompt-ingestion gate. Later q4 KV and explicit CPU placement made IQ4_XS usable at 96k; this does not retroactively turn the original failures into passes.
+## What made it faster?
 
-The current Qwen profile keeps the same Q4 weights and reasoning enabled. Three-repeat generation medians were **23.92 TPS at 8k input, 21.17 at 50k, and 19.08 at 88k**. Exact five-value recall and a small native-Pi read/edit/test regression passed. These checks establish a practical configuration on this machine, not broad coding quality or reliable reasoning over every token. See the [performance checklist and measurements](docs/QWEN38-PERFORMANCE-TODO.md) for memory, latency and rejected settings.
+We kept the **same Q4 weights** and enabled reasoning. The gain came from where tensors run and how much context/buffer memory fits alongside Windows.
 
-Read the [model comparison](docs/MODELS.md) for quantizations, speeds and failure details. The [evaluation guide](docs/TESTING.md) explains occupied context, recall and the recorded results behind the graph.
+| Setting | Measured profile | Purpose |
+|:--|:--|:--|
+| Context | 98,304 tokens | Meets the 96k target while keeping decode above 15 TPS |
+| CPU FFN groups | **58, 59, 63** | Moves selected large FFN weights to RAM; attention stays on GPU |
+| KV cache | `q4_0` keys and values | Reduces cache memory separately from model quantization |
+| Generation / batch threads | **24 / 24** | Beat 32 threads on the tested hybrid CPU |
+| Batch / microbatch | **512 / 64** | Keeps compute buffers smaller |
+| Flash Attention | On | Uses the tested CUDA attention path |
+| Reasoning / response cap | Medium, 2,048 budget / 8,192 total | Preserves reasoning and room for an answer |
+| MTP drafting | Off | Its short-input gain did not validate a better long-context default |
 
-## Evaluations: the limits matter
+Pi CLI **1.3.0**, llama.cpp **b11669 / CUDA**, one model and one inference request at a time. The launcher binds to loopback and stops its owned server when Pi exits.
 
-![Two-round effort-command implementation scores; none completed all 13 checks](assets/effort-comparison.svg)
+## Measured performance, including the wait
 
-Small repairs favored Gemma overall. Building a complete native effort command was harder: **none of the four models finished the feature**, even after steering. A registered command or confident completion message did not count as correct behavior.
+![Qwen generation speed at increasing occupied context](assets/qwen-performance.svg)
 
-We evaluate tool conformance, filled context, clean/padded coding and the two-round extension task separately. Failures and setup repairs remain visible; scripted-provider tests are distinguished from real inference.
+| Actual input | Median generation TPS | Cold prompt ingestion | Cold request through 512 output tokens |
+|--:|--:|--:|--:|
+| 7,866 | 23.92 | 12.61 s | 34.03 s |
+| 49,674 | 21.17 | 87.26 s | 111.53 s |
+| 88,146 | 19.08 | 177.34 s | 204.38 s |
+| 88,146 · Pi App open | **19.01** | 173.62 s | 200.70 s |
 
-The [eval methodology and full results](docs/TESTING.md) includes every criterion, both rounds, timing/memory observations and reproduction commands.
+Three generations per row; the first prompt is cold and later repetitions reuse its cache. TPS includes reasoning. The 512-token throughput outputs are deliberately incomplete; completed correctness checks were separate.
 
-## Pi extensions: keep the tool surface small
+Peak adapter use with Pi App was **97.5%**, leaving about **400 MiB**. At least **5.47 GB RAM** remained available. A 131k configuration completed at about **12.7 TPS**, below the target; the earlier twelve-CPU-group capacity profile reached only 9.01 TPS. This is a measured tradeoff, not a global context maximum.
 
-| Standard Windows profile | Optional trials |
+The [full performance checklist and results](docs/QWEN38-PERFORMANCE-TODO.md) records rejected placements, MTP, memory and latency. The context results should be read alongside the [evaluation methodology](docs/TESTING.md), which distinguishes allocation, recall, speed and coding quality.
+
+## Evaluations: what to expect
+
+The selected Qwen profile passed **5/5 exact-value recall** at 88,237 input tokens, with valid JSON and no tools. Both baseline and optimized placement passed a small Pi repair: observe failure, inspect, edit, rerun, preserve checks and pass **1,785 hidden assertions**.
+
+That is not evidence of broad coding-agent reliability. Larger localization tasks produced long searches, compactions and unsuccessful runs; more reasoning did not guarantee better decisions. The earlier four-model `/effort` task also had no complete success. These limitations remain documented rather than hidden behind a speed number.
+
+The [evaluation methodology and historical results](docs/TESTING.md) explain what passed, what failed and what the tests cannot establish.
+
+## Pi extensions
+
+| Standard capabilities | Optional capabilities |
 |:--|:--|
-| Context usage in the terminal footer | Web search and bounded page reading |
-| Native `/effort` session control | Research/retrieval tools |
-| Destructive-command approval adapters | Playwright CLI browser automation |
-| Windows-adapted TypeScript LSP | Computer use |
+| Context usage and session timing | Web search and bounded page reading |
+| Thinking controls | Playwright CLI browser automation |
+| Destructive-command approvals | Research/retrieval tools |
+| Windows TypeScript LSP | Computer use |
 
-Ordinary local Git commits run automatically; destructive commands request approval. Guardrails are an ergonomic protection, **not an OS sandbox**. Optional capabilities have different validation levels; installed does not mean task-validated.
+Ordinary local commits run automatically; destructive actions request approval. Guardrails are an ergonomic protection, **not an OS sandbox**. Optional tools contact external services where their function requires it.
 
-See the [extensions, hooks and guardrails guide](docs/EXTENSIONS.md) for configuration, source links, candidates and known failures.
+See the [extensions, hooks and guardrails guide](docs/EXTENSIONS.md) for configuration and validation levels.
 
 ## Prefer a window? Add Pi App
 
-Pi App is an **optional desktop interface** to the same local model, with an effort picker and Files, Run, Context and Browser panels. It does not require replacing the CLI setup.
-
 ```powershell
 local-ai-app
-local-ai-app --model gemma
 ```
 
-Quit the app from its tray before changing models. Its Resident memory counter reports Electron RAM, not llama.cpp VRAM. The CLI and app share one owned-inference lock.
+The optional desktop connects to the same Qwen profile, with an effort picker and Files, Run, Context and Browser panels. Quit from its tray to release the model. Resident memory reports Electron RAM, not llama.cpp VRAM.
 
-Follow the [Pi App setup guide](docs/PI-APP.md) for installation, connection to llama.cpp, SDK compatibility and thinking budgets.
+Follow the [Pi App setup guide](docs/PI-APP.md) for installation, local connection, extension visibility and thinking settings.
 
-## Commands and validation
+## Other models and platforms
 
-The everyday commands cover startup, installation, diagnostics and functional acceptance. Separate progress-observer and configuration-repair commands have been dropped. Normal startup uses the saved context; acceptance uses 32k and saves one local report. The core functional acceptance test passed with Gemma; fresh-machine reconstruction and broader model comparisons still have open gates. Normal startup defaults remain unchanged.
+Gemma 4 12B, Qwen3.5 9B, OmniCoder 9B and GPT-OSS 20B remain selectable alternatives. Their earlier experiments are historical comparisons, not this repository's main setup path. Flash-Next remains a separate experimental Strata selector.
 
-The [command and validation guide](docs/IMPROVEMENTS.md) shows the supported workflow and its evidence level. Legacy `pia` / `pia-app` names remain compatibility aliases.
+See [alternative models and historical measurements](docs/MODELS.md) if Qwen is not suitable for your hardware.
 
-## macOS and Linux: documented, not yet validated
+llama.cpp also supports macOS/Metal and Linux/CUDA. Our **Windows 16 GB profile is not validated on those platforms**; CPU placement and memory assumptions must be rechecked. The [installation guide's platform section](docs/INSTALL.md#macos-and-linux) provides the native baseline and shell alias.
 
-llama.cpp supports both platforms; no alternative inference runtime is required. The native baseline uses bash tools and the same model/server lifecycle. It does not claim Windows LSP or desktop-feature parity.
+## What stays local
 
-<details>
-<summary><strong>Expand platform commands and the shell alias</strong></summary>
-
-Install Node 24 LTS, then `npm install -g pnpm@12.14.0` and `pnpm install --ignore-scripts --frozen-lockfile`. Pi is a pinned project dependency. macOS with Homebrew:
-
-```sh
-brew install git llama.cpp ripgrep fd
-command -v llama-server
-```
-
-For Linux/NVIDIA, install a compiler, CMake and CUDA, then build the pinned baseline:
-
-```sh
-git clone --depth 1 --branch b11669 https://github.com/ggml-org/llama.cpp "$HOME/.local/src/llama.cpp"
-cmake -S "$HOME/.local/src/llama.cpp" -B "$HOME/.local/src/llama.cpp/build" -DCMAKE_BUILD_TYPE=Release -DGGML_CUDA=ON
-cmake --build "$HOME/.local/src/llama.cpp/build" --config Release -j
-```
-
-Copy `config/machine.posix.example.json` to ignored `machine.local.json`, set native absolute runtime/model paths and download a pinned model from the installation guide. Install `rg` and `fd` too; some Linux distributions call the latter `fdfind`.
-
-Add to `~/.zshrc` or `~/.bashrc`, replacing the checkout path:
-
-```sh
-local-ai() { node /absolute/path/local-agent-pi-llama-cpp-16gb/scripts/pia-unix.mjs --cwd "$PWD" "$@"; }
-```
-
-Use `local-ai --dry-run` before a real launch. macOS uses Metal; Linux/NVIDIA uses CUDA. Homebrew installs its current version, so record it rather than assuming our pinned measurements transfer.
-
-Upstream [installation](https://github.com/ggml-org/llama.cpp/blob/master/docs/install.md) and [build instructions](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md) describe backend prerequisites. GPU eval runners remain Windows-specific.
-
-</details>
-
-## What ships, and what stays yours
-
-| In the repository | Kept local and ignored |
+| In Git | Local and ignored |
 |:--|:--|
-| Pinned install/model manifests | Model weights and downloaded runtimes |
-| Launchers and general extensions | Credentials and machine configuration |
-| Reviewed observations and test code | Raw sessions and personal prompts |
-| Setup and evaluation guides | The 105-repository research diary |
+| Setup guide, measured profile and sanitized results | Weights and downloaded runtimes |
+| Launchers, extensions and tests | Machine paths, credentials and configuration backups |
+| Pinned download manifest | Sessions, private prompts and research diary |
 
-Qwen3.6, further Qwen3.8 experiments and larger Gemma variants are possible future research, not additional validated models or current defaults.
-
-This repository starts from a reviewed source snapshot with a new Git history. Models, runtimes, machine configuration, private research and raw sessions are not included.
-
-## License
-
-Original code and documentation are available under the [MIT license](LICENSE). Third-party dependencies, applications and model weights retain their own licenses; model weights are downloaded separately.
+Legacy `pia` / `pia-app` names remain compatibility aliases. Original code and documentation use the [MIT license](LICENSE); dependencies, applications and model weights retain their own licenses.

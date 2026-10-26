@@ -7,11 +7,16 @@ export function applyEffort(payload,model,level,customBudget){
   level=canonical(level);
   if(!levels(model).includes(level))throw Error(`${model} supports ${levels(model).join(', ')}; off is not supported for GPT-OSS`);
   const result={...payload,chat_template_kwargs:{...payload.chat_template_kwargs,enable_thinking:level!=='off'}};
+  if(model==='qwen38'){
+    const native=level==='off'?'none':level==='high'?'xhigh':level;
+    result.reasoning_effort=native;
+    result.chat_template_kwargs={...result.chat_template_kwargs,preserve_thinking:true,reasoning_effort:level==='off'?'medium':native};
+  }
   if(model==='qwen-flash'){
     result.reasoning_effort=level==='off'?'none':level==='high'?'xhigh':level;
     return result;
   }
-  result.reasoning_effort=level==='off'?'none':model==='gpt-oss'?level:undefined;
+  if(model!=='qwen38')result.reasoning_effort=level==='off'?'none':model==='gpt-oss'?level:undefined;
   if(result.reasoning_effort===undefined)delete result.reasoning_effort;
   const cap=result.max_tokens??result.max_completion_tokens??8192;
   result.reasoning_budget_tokens=Math.max(0,Math.min(customBudget??budgets[level],Math.max(0,cap-1024)));

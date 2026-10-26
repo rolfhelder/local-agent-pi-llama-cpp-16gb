@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
-import {machine,root,nodeExe,piEntry,exec} from './local-runtime.mjs';
+import {machine,root,nodeExe,piEntry,exec,localModels} from './local-runtime.mjs';
 import {renderDoctor,explainDoctor} from './doctor-format.mjs';
 import {discoverOffload} from './gpu-offload.mjs';
 import {runGpuProbe} from './gpu-probe.mjs';
@@ -23,6 +23,15 @@ export function publicDiagnostics(value){
  return value.replace(/[A-Za-z]:[\\/]+Users[\\/]+[^\\/\s]+/gi,'<HOME>').replaceAll(os.homedir(),'<HOME>').replace(/([?&](?:token|key|api_key)=)[^&\s]+/gi,'$1<REDACTED>');
 }
 export async function hashFile(file,onProgress){const hash=createHash('sha256');let bytes=0;for await(const chunk of createReadStream(file)){hash.update(chunk);bytes+=chunk.length;onProgress?.(bytes);}return hash.digest('hex');}
+export async function expectedModelHash(config){
+ const registered=localModels[config.ModelId?.replace(/-local$/,'')];
+ for(const name of ['models.download-plan.json','gemma-download.json','coding-model-downloads.json','qwen38-download.json','qwen38-next-candidate.json']){
+  for(const entry of JSON.parse(await readFile(path.join(root,'manifests',name),'utf8'))){
+   const relative=entry.Repo+'/'+entry.File;
+   if(registered?.file===relative||config.ModelFile.replaceAll('\\','/').endsWith('/'+relative))return entry.SHA256;
+  }
+ }
+}
 export async function collectDoctor(config,{verifyModel=false,onProgress=()=>{},command=exec,offload=discoverOffload,getJson=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(2000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}}={}){
  const report={schemaVersion:1,mode:'read-only; no model startup',model:config.ModelId,endpoint:config.RouterUrl,contextTokens:config.ContextSize,modelHashRequested:verifyModel,platform:process.platform,architecture:process.arch,ram:{totalBytes:os.totalmem(),freeBytes:os.freemem()},checks:[]};
  const check=(id,status,details)=>report.checks.push({id,status,...details});
@@ -30,7 +39,7 @@ export async function collectDoctor(config,{verifyModel=false,onProgress=()=>{},
  for(const [id,file,args]of [['node-version',nodeExe,['--version']],['llama-version',config.LlamaExecutable,['--version']],['gpu','nvidia-smi',['--query-gpu=name,driver_version,memory.total,memory.free','--format=csv,noheader,nounits']]]){try{const r=await command(file,args,{timeout:7000,maxBuffer:128*1024,windowsHide:true});check(id,'pass',{value:(r.stdout||r.stderr).trim()});}catch(e){check(id,'unknown',{error:e.code??e.message});}}
  try{const sdk=JSON.parse(await readFile(path.join(root,'node_modules/@earendil-works/pi-coding-agent/package.json'),'utf8'));check('pi-version','pass',{value:sdk.version});}catch(e){check('pi-version','unknown',{error:e.code??e.message});}
  try{const info=await statfs(config.ModelsDirectory);report.disk={freeBytes:info.bavail*info.bsize};}catch(e){report.disk={status:'unknown',error:e.code};}
- if(verifyModel){try{const size=(await stat(config.ModelFile)).size;onProgress('Reading model for SHA256');const digest=await hashFile(config.ModelFile,bytes=>onProgress(`Verifying model · ${Math.floor(bytes/size*100)}% · ${(bytes/1e9).toFixed(1)} / ${(size/1e9).toFixed(1)} GB`,bytes/size));onProgress('Checking endpoint and GPU evidence');const manifests=['models.download-plan.json','gemma-download.json','coding-model-downloads.json','qwen38-download.json','qwen38-next-candidate.json'];let expected;for(const name of manifests){for(const entry of JSON.parse(await readFile(path.join(root,'manifests',name),'utf8'))){if(config.ModelFile.replaceAll('\\','/').endsWith('/'+entry.Repo+'/'+entry.File))expected=entry.SHA256;}}check('model-sha256',expected?(digest===expected?'pass':'fail'):'unknown',{sha256:digest,expected:expected??null});}catch(e){check('model-sha256','fail',{error:e.code??e.message});}}
+ if(verifyModel){try{const size=(await stat(config.ModelFile)).size;onProgress('Reading model for SHA256');const digest=await hashFile(config.ModelFile,bytes=>onProgress(`Verifying model · ${Math.floor(bytes/size*100)}% · ${(bytes/1e9).toFixed(1)} / ${(size/1e9).toFixed(1)} GB`,bytes/size));onProgress('Checking endpoint and GPU evidence');const expected=await expectedModelHash(config);check('model-sha256',expected?(digest===expected?'pass':'fail'):'unknown',{sha256:digest,expected:expected??null});}catch(e){check('model-sha256','fail',{error:e.code??e.message});}}
  try{await getJson(config.RouterUrl+'/health');const models=await getJson(config.RouterUrl+'/v1/models');const props=await getJson(config.RouterUrl+'/props');check('endpoint',endpointVerdict(config,models,props).status,{...endpointVerdict(config,models,props),requestedContext:config.ContextSize,effectiveContext:props.default_generation_settings?.n_ctx,slots:props.total_slots});}catch(e){check('endpoint','unknown',{reason:'No matching running endpoint verified',error:e.message});}
  const portOwner=async port=>{
   if(process.platform!=='win32'||!Number.isInteger(port)||port<1||port>65535)return null;

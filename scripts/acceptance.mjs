@@ -2,7 +2,7 @@ import {mkdir,writeFile,readFile,stat} from 'node:fs/promises';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {root,machine,ensureServer,acquireInferenceLock,prepareProfile,nodeExe,exec,serverArguments,generationLimits} from './local-runtime.mjs';
-import {hashFile} from './doctor.mjs';
+import {hashFile,expectedModelHash} from './doctor.mjs';
 import {serverTimings} from '../evals/timings.mjs';
 import os from 'node:os';
 import {createAcceptanceUI} from './acceptance-ui.mjs';
@@ -40,7 +40,7 @@ export async function main(args=process.argv.slice(2)){
  const release=await acquireInferenceLock();let server;
  try{
  await runStages([
- ['pinned-model',async()=>{let expected;for(const filename of ['models.download-plan.json','gemma-download.json','coding-model-downloads.json']){for(const m of JSON.parse(await readFile(path.join(root,'manifests',filename),'utf8'))){if(config.ModelFile.replaceAll('\\','/').endsWith('/'+m.Repo+'/'+m.File))expected=m.SHA256;}}if(!expected)ui?.note('No pinned hash: computing a local fingerprint; download integrity is unverified.');const total=(await stat(config.ModelFile)).size;const actual=await hashFile(config.ModelFile,bytes=>ui?.progress(`${Math.floor(bytes/total*100)}% · ${(bytes/1e9).toFixed(1)} / ${(total/1e9).toFixed(1)} GB`));if(expected&&actual!==expected)throw Error('Model checksum mismatch');return {sha256:actual,expected:expected??null,verification:expected?'pinned checksum matched':'local fingerprint only; integrity unverified'};}],
+ ['pinned-model',async()=>{const expected=await expectedModelHash(config);if(!expected)ui?.note('No pinned hash: computing a local fingerprint; download integrity is unverified.');const total=(await stat(config.ModelFile)).size;const actual=await hashFile(config.ModelFile,bytes=>ui?.progress(`${Math.floor(bytes/total*100)}% · ${(bytes/1e9).toFixed(1)} / ${(total/1e9).toFixed(1)} GB`));if(expected&&actual!==expected)throw Error('Model checksum mismatch');return {sha256:actual,expected:expected??null,verification:expected?'pinned checksum matched':'local fingerprint only; integrity unverified'};}],
  ['owned-endpoint',async()=>{server=await ensureServer(config);return {model:config.ModelId,context:config.ContextSize,slots:1,owned:server.owned};}],
  ['real-answer',async()=>{const response=await fetch(config.RouterUrl+'/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:config.ModelId,messages:[{role:'user',content:'Reply with exactly LOCAL_READY_7319 and nothing else.'}],max_tokens:8192,temperature:0}),signal:AbortSignal.timeout(120000)});if(!response.ok)throw Error('Provider HTTP '+response.status);const data=await response.json();const content=data.choices?.[0]?.message?.content;if(typeof content!=='string'||content.trim()!=='LOCAL_READY_7319')throw Error('Model did not return the requested readiness marker');return {answerMatches:true,usage:data.usage};}],
  ['pi-tool-loop',async()=>{const cwd=path.join(base,'workspace');await mkdir(cwd,{recursive:true});await writeFile(path.join(cwd,'math.cjs'),'exports.add = (a,b) => a-b;\n');const check='const a=require("node:assert/strict"),{add}=require("./math.cjs");a.equal(add(2,3),5);a.equal(add(-2,3),1);console.log("checks passed");\n';await writeFile(path.join(cwd,'check.cjs'),check);

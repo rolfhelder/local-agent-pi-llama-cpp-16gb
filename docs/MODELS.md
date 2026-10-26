@@ -1,14 +1,26 @@
-# Tested models and limitations
+# Qwen3.8 27B and historical alternatives
 
-Measured on Windows with an RTX 4090 Laptop GPU (16376 MiB VRAM), 32 GiB system RAM, Pi 1.3.0 and llama.cpp b11669. Results are small local samples from October 21–22, 2026. **Qwen3.8 27B (`qwen38`,96k) is the current user-selected default** for `local-ai` and `local-ai-app`.
+The main setup is **Qwen3.8 27B UD-IQ4_XS at 96k context** on Windows, RTX 4090 Laptop (16,376 MiB VRAM), 32 GB RAM, Pi1.3.0 and llama.cpp b11669. Results were recorded October21–24,2026. Start with the [Qwen setup and optimization guide](QWEN38.md); the older four-model experiments below are alternatives, not the default installation path.
 
-## Coding and memory
+## Qwen3.8 27B: CPU placement changes the practical result
 
-### Flash-Next Coder with Strata (experimental)
+The current default keeps UD-IQ4_XS weights and uses **98,304 context, q4_0 KV, three selected CPU FFN groups (58, 59, 63), 24 threads and microbatch 64**. Three-repeat generation medians were 23.92 TPS at 7,866 input tokens, 21.17 at 49,674, and 19.08 at 88,146. Five-value recall passed at 88,237 input tokens, and both baseline and candidate passed a small native-Pi repair with 1,785 hidden assertions. This is a speed/capacity and regression result, not a general coding benchmark. The [performance checklist](QWEN38-PERFORMANCE-TODO.md) records memory, cold latency and alternatives, including 131k at only about 12.7 TPS.
 
-On the configured Windows machine, use `local-ai --model qwen-flash` for Pi CLI or `local-ai-app --model qwen-flash` for Pi App. This selector uses the existing Strata installation and both ISTA-DASLab Coder IQ1_M shards, with **65,536 tokens**, one slot, vision off and MTP drafting off. The default selector is Qwen3.8 27B (`qwen38`). Preview with `--dry-run`; the launcher checks Strata's plan and refuses missing engine/model downloads. New PCs need Strata and the weights installed separately; `StrataDirectory` and `StrataInstallDirectory` in `machine.local.json` can override their locations.
+The table below preserves the original failed configurations, before this tuning.
 
-Effort uses native low/medium/xhigh (Pi high maps to xhigh), with a 32,768-token output ceiling shortened by Strata to remaining context. This configuration is experimental: successful loading does not establish reliable coding or long-context quality. Earlier localization trials did not produce a verified fix within their response budgets.
+Tested [Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B) through pinned [Unsloth GGUFs](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF), revision `4ca720788d1e01f1bff70c033e0d0028fd02e502`. Native context is documented as 262144, but useful local throughput is hardware dependent. The model supports vision; our runs were text-only and did not include a projector.
+
+| Quantization | Weight size | Test | Outcome |
+|---|---:|---|---|
+| UD-IQ4_XS | 14.25 GB | 204800, f16 / q8 cache | Loaded; both timed out during prompt ingestion (about 13–14% processed in ten minutes). |
+| UD-IQ4_XS | 14.25 GB | 131072, f16 | Loaded; six-minute timeout, about 15% processed. Remaining intermediate trials were cancelled/unscored. |
+| UD-Q3_K_XL | 13.15 GB | 131072, f16 / q8 cache | Loaded; ten-minute timeouts, about 24% / 21% processed. |
+
+Peak total GPU usage was approximately 15.5 GiB. These were **throughput failures**, not demonstrated allocation failures or coding-quality failures. Recall and downstream coding/research/effort quality were unassessed because the required context gate failed. Windows shared-GPU-memory spill was suspected but not confirmed. Both verified weights and scratch files were deleted; the overnight scheduler was removed.
+
+Keep [IQ4_XS](../manifests/qwen38-download.json) and [Q3_K_XL](../manifests/qwen38-next-candidate.json) recipes for the other PC. More available VRAM may help but is not a proven remedy. Verify its actual GPU/memory, re-download one pinned quantization, test 131072 with bounded ingestion first, and only increase toward 204800 after a practical pass. A smaller context could be viable; no blanket rejection of the model family is justified.
+
+## Historical four-model comparison
 
 Each model repaired three projects clean and with 100000 unrelated background tokens. A full pass requires preserved public checks, all hidden checks and normal agent completion within six minutes. Reasoning was on (2048 thinking tokens / 8192 total output), f16 KV, one slot.
 
@@ -47,23 +59,13 @@ One clean first attempt plus one diagnostic follow-up; 13 behavioral checks. No 
 
 Qwen recovered best after steering, but **none implemented the complete feature correctly**. Gemma and Qwen recovered basic session controls while still missing provider-budget/picker details. GPT-OSS's command errored on an undefined `select`; OmniCoder did not produce a loadable implementation. Production `/effort` was restored afterward. This single SDK-extension task does not supersede the broader coding results.
 
-## Qwen3.8 27B: CPU placement changes the practical result
+## Experimental Flash-Next (separate runtime)
 
-The current default keeps UD-IQ4_XS weights and uses **98,304 context, q4_0 KV, three selected CPU FFN groups (58, 59, 63), 24 threads and microbatch 64**. Three-repeat generation medians were 23.92 TPS at 7,866 input tokens, 21.17 at 49,674, and 19.08 at 88,146. Five-value recall passed at 88,237 input tokens, and both baseline and candidate passed a small native-Pi repair with 1,785 hidden assertions. This is a speed/capacity and regression result, not a general coding benchmark. The [performance checklist](QWEN38-PERFORMANCE-TODO.md) records memory, cold latency and alternatives, including 131k at only about 12.7 TPS.
 
-The table below preserves the original failed configurations, before this tuning.
 
-Tested [Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B) through pinned [Unsloth GGUFs](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF), revision `4ca720788d1e01f1bff70c033e0d0028fd02e502`. Native context is documented as 262144, but useful local throughput is hardware dependent. The model supports vision; our runs were text-only and did not include a projector.
+On the configured Windows machine, use `local-ai --model qwen-flash` for Pi CLI or `local-ai-app --model qwen-flash` for Pi App. This selector uses the existing Strata installation and both ISTA-DASLab Coder IQ1_M shards, with **65,536 tokens**, one slot, vision off and MTP drafting off. The default selector is Qwen3.8 27B (`qwen38`). Preview with `--dry-run`; the launcher checks Strata's plan and refuses missing engine/model downloads. New PCs need Strata and the weights installed separately; `StrataDirectory` and `StrataInstallDirectory` in `machine.local.json` can override their locations.
 
-| Quantization | Weight size | Test | Outcome |
-|---|---:|---|---|
-| UD-IQ4_XS | 14.25 GB | 204800, f16 / q8 cache | Loaded; both timed out during prompt ingestion (about 13–14% processed in ten minutes). |
-| UD-IQ4_XS | 14.25 GB | 131072, f16 | Loaded; six-minute timeout, about 15% processed. Remaining intermediate trials were cancelled/unscored. |
-| UD-Q3_K_XL | 13.15 GB | 131072, f16 / q8 cache | Loaded; ten-minute timeouts, about 24% / 21% processed. |
-
-Peak total GPU usage was approximately 15.5 GiB. These were **throughput failures**, not demonstrated allocation failures or coding-quality failures. Recall and downstream coding/research/effort quality were unassessed because the required context gate failed. Windows shared-GPU-memory spill was suspected but not confirmed. Both verified weights and scratch files were deleted; the overnight scheduler was removed.
-
-Keep [IQ4_XS](../manifests/qwen38-download.json) and [Q3_K_XL](../manifests/qwen38-next-candidate.json) recipes for the other PC. More available VRAM may help but is not a proven remedy. Verify its actual GPU/memory, re-download one pinned quantization, test 131072 with bounded ingestion first, and only increase toward 204800 after a practical pass. A smaller context could be viable; no blanket rejection of the model family is justified.
+Effort uses native low/medium/xhigh (Pi high maps to xhigh), with a 32,768-token output ceiling shortened by Strata to remaining context. This configuration is experimental: successful loading does not establish reliable coding or long-context quality. Earlier localization trials did not produce a verified fix within their response budgets.
 
 ## Optional module evidence
 
