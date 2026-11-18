@@ -131,3 +131,7 @@ llama.cpp also supports macOS/Metal and Linux/CUDA. Our **Windows 16 GB profile 
 | Pinned download manifest | Sessions, private prompts and research diary |
 
 Legacy `pia` / `pia-app` names remain compatibility aliases. Original code and documentation use the [MIT license](LICENSE); dependencies, applications and model weights retain their own licenses.
+
+## Slop warning
+
+This repo was mostly done by AI agents. I'm sharing this because I think this may be useful for other people. Be warned this may contain slop and bad code I didn't review line by line. I tested this on my machine, made it work and put the end result into this repo.
